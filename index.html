@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TrackIt — Live Train Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0B57D0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#141218" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="dns-prefetch" href="https://sujith.bhargavtodimela4.workers.dev">
+  <link rel="preload" href="https://fonts.gstatic.com/s/materialsymbolsrounded/v233/sIJfXS_BGv5RLkMiMJIBfOH97-BfohMFMLoGIj5lBpWLQUwZGGJxkJkQAUIv.woff2" as="font" type="font/woff2" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=block" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin defer></script>
+  <script>
+    (function () {
+      try {
+        const t = localStorage.getItem('tt');
+        if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        else if (t === 'light') document.documentElement.removeAttribute('data-theme');
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-bar" id="appBar">
+    <div class="bar-inner">
+      <div class="brand" id="brandBtn">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="4" y="3" width="16" height="12" rx="3" fill="white" opacity=".25"/>
+            <rect x="4" y="3" width="16" height="12" rx="3" stroke="white" stroke-width="1.8"/>
+            <circle cx="8.5" cy="18.5" r="1.8" fill="white"/>
+            <circle cx="15.5" cy="18.5" r="1.8" fill="white"/>
+            <line x1="4" y1="9" x2="20" y2="9" stroke="white" stroke-width="1.8"/>
+            <line x1="12" y1="3" x2="12" y2="9" stroke="white" stroke-width="1.8"/>
+            <line x1="8" y1="16.5" x2="16" y2="16.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">Track<em>It</em></div>
+      </div>
+      <div class="search-wrap">
+        <div class="search-field">
+          <span class="material-symbols-rounded ms" aria-hidden="true">search</span>
+          <input id="searchInput" type="search" placeholder="Train number or name…" autocomplete="off" inputmode="search" aria-label="Search trains">
+        </div>
+        <div id="suggestBox" role="listbox" aria-label="Suggestions"></div>
+      </div>
+      <div class="bar-right">
+        <div class="ist-badge" aria-label="Indian Standard Time">
+          <div class="dot" aria-hidden="true"></div>
+          <span id="istText" class="ist-txt">--:--</span>
+          <span class="ist-label">IST</span>
+        </div>
+        <div class="net-pill" id="netPill" title="Network Health" role="button" tabindex="0" aria-expanded="false" aria-haspopup="true">
+          <div class="net-pill-sig s0" id="netSig">
+            <div class="sig-bars" id="sigBars" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <span id="netLabel">—</span>
+          </div>
+          <div class="net-pill-loc" id="netLoc">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/>
+            </svg>
+            <span id="netLocTxt">…</span>
+          </div>
+          <div class="net-popover" id="netPopover" role="tooltip">
+            <div class="net-pop-row"><span class="net-pop-lbl">Signal</span>  <span class="net-pop-val" id="popSignal">—</span></div>
+            <div class="net-pop-row"><span class="net-pop-lbl">Type</span>    <span class="net-pop-val" id="popType">—</span></div>
+            <div class="net-pop-row"><span class="net-pop-lbl">Speed</span>   <span class="net-pop-val" id="popSpeed">—</span></div>
+            <div class="net-pop-row"><span class="net-pop-lbl">Public IP</span><span class="net-pop-val" id="popIp">—</span></div>
+            <div class="net-pop-row"><span class="net-pop-lbl">ISP</span>     <span class="net-pop-val" id="popIsp">—</span></div>
+            <div class="net-pop-row"><span class="net-pop-lbl">Location</span><span class="net-pop-val" id="popLoc">—</span></div>
+            <div class="net-pop-row"><span class="net-pop-lbl">Coords</span> <span class="net-pop-val" id="popCoords">—</span></div>
+            <div class="net-pop-row"><span class="net-pop-lbl">Latency</span><span class="net-pop-val" id="popPing">—</span></div>
+          </div>
+        </div>
+        <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle theme">
+          <span class="material-symbols-rounded" id="themeIcon">light_mode</span>
+        </button>
+        <button class="icon-btn" id="favMenuBtn" aria-label="Favourites">
+          <span class="material-symbols-rounded">star</span>
+        </button>
+        <button class="refresh-btn" id="refreshBtn" aria-label="Refresh">
+          <span class="material-symbols-rounded ms refresh-icon">refresh</span>
+          <span class="txt">Refresh</span>
+        </button>
+      </div>
+    </div>
+  </header>
+  <main class="main">
+    <div id="searchResults" role="region" aria-label="Search results"></div>
+    <div id="liveView"      role="region" aria-label="Live train view"></div>
+  </main>
+  <footer class="footer">
+    <div><strong>TrackIt</strong><span class="beta">BETA</span></div>
+    <div>Made with ❤️ by <strong>Bhargav Todimela & Antigravity</strong> · <a href="#" id="disclaimerLink">Disclaimer</a></div>
+    <div>Found a bug? <a href="https://github.com" target="_blank" rel="noopener noreferrer">Report an issue →</a></div>
+    <div class="footer-meta">Auto-refreshes every 45s · Data: Indian Railways</div>
+  </footer>
+  <div id="disclaimerModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="disclaimerTitle">
+    <div class="modal-box">
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close disclaimer">×</button>
+      <h2 id="disclaimerTitle">Disclaimer</h2>
+      <p>Train information is provided for informational purposes only. Data may not always reflect exact real-time status due to delays in data updates or network issues.</p>
+      <p>Verify the latest status through official railway sources before planning your journey. Platform numbers are based on historical patterns and may differ from actual assignments.</p>
+      <p>This platform shall not be held responsible for any inconvenience resulting from its use.</p>
+    </div>
+  </div>
+  <div id="favModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="favModalTitle">
+    <div class="modal-box">
+      <button class="modal-close" id="favModalClose" aria-label="Close favourites">×</button>
+      <h2 id="favModalTitle">⭐ Favourites</h2>
+      <div id="favModalContent"></div>
+    </div>
+  </div>
+  <div id="toast"          role="status" aria-live="polite"></div>
+  <div id="netBadge"       class="net-badge" aria-live="polite"></div>
+  <div class="fav-confirm" id="favConfirm" role="status" aria-live="polite"></div>
+  <button class="fab" id="scrollTopFab" aria-label="Scroll to top">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 14l5-5 5 5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <script src="script.js" defer></script>
+
+</body>
+</html>

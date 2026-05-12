@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "route train url",
+			"type": "shell",
+			"command": "Write-Output 'Skipping task creation; applying patch directly'",
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}
