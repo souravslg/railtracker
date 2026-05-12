@@ -986,11 +986,12 @@
   }
 
   function wireShare(trainNo, trainName, curStn, curCode, dest, isLate, delayMins, progress) {
-    const shareText = `🚆 ${trainNo} — ${trainName}\n📍 At: ${curStn ? curStn.station_name : curCode || '—'}\n⏱ Delay: ${isLate ? '+' + delayMins + ' min' : 'On time'}\n🏁 Destination: ${dest ? dest.station_name : '—'}\n📊 Progress: ${progress}%\n\nTracked via Train Tracker`;
+    const liveUrl = window.location.origin + ROUTE_BASE_PATH + trainNo;
+    const shareText = `🚆 ${trainNo} — ${trainName}\n📍 At: ${curStn ? curStn.station_name : curCode || '—'}\n⏱ Delay: ${isLate ? '+' + delayMins + ' min' : 'On time'}\n🏁 Destination: ${dest ? dest.station_name : '—'}\n📊 Progress: ${progress}%\n\n🔗 Live Link: ${liveUrl}`;
     const cpBtn = $('copyShareBtn');
     if (cpBtn) cpBtn.addEventListener('click', function () {
-      navigator.clipboard.writeText(shareText)
-        .then(() => { toast('Copied!', 'done'); this.classList.add('copied'); setTimeout(() => this.classList.remove('copied'), 2000); })
+      navigator.clipboard.writeText(liveUrl)
+        .then(() => { toast('Live URL Copied!', 'done'); this.classList.add('copied'); setTimeout(() => this.classList.remove('copied'), 2000); })
         .catch(() => toast('Copy failed — try long-pressing', 'error'));
     });
     const waBtn = $('waShareBtn');
