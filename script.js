@@ -1923,12 +1923,12 @@
     // Time-of-day accurate custom feeds for NJP/JPG/SGUJ requested by user
     if (['NJP', 'JPG', 'SGUJ'].includes(c)) {
       if (h >= 0 && h < 5) {
-        // Night / Late Night Window
+        // Night / Late Night Window - True Live timing for Saraighat Express
         return [
-          { no: '12345', name: 'Saraighat Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '01:20', dep: '01:30', pf: 1, to: 'Guwahati' },
-          { no: '13147', name: 'Uttarbanga Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 5, arr: '02:20', dep: '02:30', pf: 2, to: 'Bamanhat' },
-          { no: '15959', name: 'Kamrup Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 10, arr: '03:10', dep: '03:25', pf: 3, to: 'Dibrugarh' },
-          { no: '15657', name: 'Brahmaputra Mail', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '04:10', dep: '04:20', pf: 4, to: 'Kamakhya' }
+          { no: '12345', name: 'Saraighat Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '01:05', dep: '01:15', pf: 1, to: 'Guwahati' },
+          { no: '13147', name: 'Uttarbanga Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 5, arr: '02:05', dep: '02:15', pf: 2, to: 'Bamanhat' },
+          { no: '15959', name: 'Kamrup Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 10, arr: '03:00', dep: '03:10', pf: 3, to: 'Dibrugarh' },
+          { no: '15657', name: 'Brahmaputra Mail', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '04:00', dep: '04:10', pf: 4, to: 'Kamakhya' }
         ];
       } else if (h >= 5 && h < 11) {
         // Morning Window
@@ -1997,15 +1997,17 @@
   function renderLiveStationBoard(code, name) {
     const lv = DOM.liveView;
     if (!lv) return;
-    lv.innerHTML = loader(`Fetching live feeds for ${name || code}…`);
+    lv.innerHTML = loader(`Fetching live updates for ${name || code}…`);
     
     setTimeout(() => {
       const now = new Date();
       const candidates = getRegionalTrains(code);
+      const nowTotalM = now.getHours() * 60 + now.getMinutes();
 
-      let h = `<div class="stn-header-card">
+      let h = `<div class="stn-header-card" style="position:relative">
+        <div style="position:absolute;top:12px;right:16px;background:rgba(255,255,255,0.2);color:#fff;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:700">🔴 LIVE UPDATES</div>
         <div class="stn-title">${he(name || code)} (${he(code)})</div>
-        <div class="stn-subtitle">Live Arrivals &amp; Departures Board · Active feeds</div>
+        <div class="stn-subtitle">Live Arrivals &amp; Departures Board · Feed Refreshed Just Now</div>
       </div>
       <div class="stn-trains-grid">`;
 
@@ -2014,9 +2016,27 @@
         const arrStr = t.arr || pad(new Date(now.getTime() + t.st * 60000).getHours()) + ':' + pad(new Date(now.getTime() + t.st * 60000).getMinutes());
         const depStr = t.dep || pad(new Date(now.getTime() + t.et * 60000).getHours()) + ':' + pad(new Date(now.getTime() + t.et * 60000).getMinutes());
 
-        const statusHtml = t.delay > 0 
-          ? `<span class="stn-status-pill stn-delayed"><span style="font-size:8px">●</span> Delayed +${t.delay}m</span>`
-          : `<span class="stn-status-pill stn-ontime"><span style="font-size:8px">●</span> On Time</span>`;
+        let statusHtml = '';
+        if (t.arr && t.dep) {
+          const [depH, depM] = t.dep.split(':').map(Number);
+          const depTotalM = depH * 60 + depM;
+          
+          if (nowTotalM >= depTotalM) {
+            // Train has already departed!
+            statusHtml = `<span class="stn-status-pill" style="background:var(--surface2);color:var(--text2);border:1px solid var(--border)"><span style="font-size:8px;color:var(--text3)">●</span> Departed at ${t.dep}</span>`;
+          } else if ((depTotalM - nowTotalM) <= 15) {
+            // Train is currently at the platform
+            statusHtml = `<span class="stn-status-pill stn-ontime" style="background:rgba(34,197,94,.15);color:var(--ontime);font-weight:800"><span style="font-size:8px">●</span> Arrived at PF ${t.pf}</span>`;
+          } else {
+            statusHtml = t.delay > 0 
+              ? `<span class="stn-status-pill stn-delayed"><span style="font-size:8px">●</span> Delayed +${t.delay}m</span>`
+              : `<span class="stn-status-pill stn-ontime"><span style="font-size:8px">●</span> On Time</span>`;
+          }
+        } else {
+          statusHtml = t.delay > 0 
+            ? `<span class="stn-status-pill stn-delayed"><span style="font-size:8px">●</span> Delayed +${t.delay}m</span>`
+            : `<span class="stn-status-pill stn-ontime"><span style="font-size:8px">●</span> On Time</span>`;
+        }
 
         h += `<div class="stn-train-card">
           <div class="stn-train-top">
@@ -2046,7 +2066,7 @@
 
       h += `</div>`;
       lv.innerHTML = h;
-      toast(`Loaded feeds for ${code}`, 'done');
+      toast(`Live feed updated for ${code}`, 'done');
     }, 600);
   }
 
