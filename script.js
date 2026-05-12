@@ -1914,6 +1914,54 @@
   }
 
   // Premium intelligent simulated route generation
+  // Premium intelligent simulated route generation with Zone-Awareness
+  function getRegionalTrains(code) {
+    const c = (code || '').toUpperCase();
+    const eastPool = ['HWH','SDAH','NJP','JPG','SGUJ','GHY','PNBE','BBS','KGP','MLDT','APDJ','DBRG','KIR','KOAA','SHM','CTC','PURI','ASN','BWN','DGR','LMG','SCL','AGTL'];
+    const northPool = ['NDLS','CDG','ASR','JAT','LKO','CNB','BSB','PRYJ','GKP','DDN','SVDK','UMB','LDH','JUC','SRE','HW','MB','BE','AY','GWL','VGLJ','MTJ','AGC'];
+    const westPool = ['CSMT','BCT','ADI','PUNE','BRC','ST','RJT','BSL','LTT','BDTS','DR','TNA','KYN','BKN','UDZ','KOTA','BVC','BHUJ'];
+
+    if (eastPool.includes(c)) {
+      return [
+        { no: '12343', name: 'Darjeeling Mail', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, st: -15, et: 5, pf: 1, to: 'Haldibari' },
+        { no: '22301', name: 'Vande Bharat Express', type: 'vb', classStr: 'type-vb', pfx: 'VB', delay: 0, st: -5, et: 10, pf: 2, to: 'New Jalpaiguri' },
+        { no: '12377', name: 'Padatik Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 10, st: 20, et: 30, pf: 3, to: 'New Alipurduar' },
+        { no: '15959', name: 'Kamrup Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 25, st: 45, et: 55, pf: 4, to: 'Dibrugarh' },
+        { no: '12041', name: 'Shatabdi Express', type: 'shat', classStr: 'type-shat', pfx: 'SHAT', delay: 0, st: 90, et: 95, pf: 2, to: 'Howrah Jn' },
+        { no: '12505', name: 'Northeast Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 5, st: 130, et: 140, pf: 5, to: 'Kamakhya' }
+      ];
+    }
+    if (northPool.includes(c)) {
+      return [
+        { no: '22436', name: 'Vande Bharat Express', type: 'vb', classStr: 'type-vb', pfx: 'VB', delay: 0, st: -10, et: 5, pf: 1, to: 'Varanasi Jn' },
+        { no: '12302', name: 'Howrah Rajdhani Express', type: 'raj', classStr: 'type-raj', pfx: 'RAJ', delay: 15, st: 12, et: 20, pf: 3, to: 'Howrah Jn' },
+        { no: '12004', name: 'Lucknow Shatabdi Express', type: 'shat', classStr: 'type-shat', pfx: 'SHAT', delay: 0, st: 35, et: 40, pf: 2, to: 'Lucknow Jn' },
+        { no: '12556', name: 'Gorakhdham Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 10, st: 65, et: 75, pf: 5, to: 'Gorakhpur' },
+        { no: '12424', name: 'Dibrugarh Rajdhani', type: 'raj', classStr: 'type-raj', pfx: 'RAJ', delay: 0, st: 110, et: 115, pf: 4, to: 'Dibrugarh' },
+        { no: '12952', name: 'Mumbai Rajdhani Express', type: 'raj', classStr: 'type-raj', pfx: 'RAJ', delay: 0, st: 160, et: 165, pf: 3, to: 'Mumbai Central' }
+      ];
+    }
+    if (westPool.includes(c)) {
+      return [
+        { no: '22225', name: 'Vande Bharat Express', type: 'vb', classStr: 'type-vb', pfx: 'VB', delay: 0, st: -10, et: 5, pf: 1, to: 'Solapur' },
+        { no: '12951', name: 'Mumbai Rajdhani Express', type: 'raj', classStr: 'type-raj', pfx: 'RAJ', delay: 5, st: 15, et: 25, pf: 3, to: 'New Delhi' },
+        { no: '12009', name: 'Shatabdi Express', type: 'shat', classStr: 'type-shat', pfx: 'SHAT', delay: 0, st: 40, et: 45, pf: 2, to: 'Ahmedabad Jn' },
+        { no: '12137', name: 'Punjab Mail', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 20, st: 70, et: 85, pf: 4, to: 'Firozpur Cantt' },
+        { no: '11019', name: 'Konark Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 0, st: 120, et: 130, pf: 5, to: 'Bhubaneswar' },
+        { no: '12925', name: 'Paschim Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 10, st: 150, et: 160, pf: 6, to: 'Amritsar' }
+      ];
+    }
+    // Default / South Pool
+    return [
+      { no: '20607', name: 'Vande Bharat Express', type: 'vb', classStr: 'type-vb', pfx: 'VB', delay: 0, st: -10, et: 5, pf: 1, to: 'Mysuru Jn' },
+      { no: '12626', name: 'Kerala Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 5, st: 15, et: 25, pf: 3, to: 'Trivandrum Cntl' },
+      { no: '12724', name: 'Telangana Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 45, st: 45, et: 55, pf: 4, to: 'Hyderabad Decan' },
+      { no: '12639', name: 'Brindavan Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, st: 80, et: 90, pf: 2, to: 'KSR Bengaluru' },
+      { no: '12842', name: 'Coromandel Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 10, st: 115, et: 125, pf: 5, to: 'Howrah Jn' },
+      { no: '12703', name: 'Falaknuma Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, st: 155, et: 165, pf: 6, to: 'Secunderabad' }
+    ];
+  }
+
   function renderLiveStationBoard(code, name) {
     const lv = DOM.liveView;
     if (!lv) return;
@@ -1921,16 +1969,7 @@
     
     setTimeout(() => {
       const now = new Date();
-
-      // Generate 6 diverse high-speed / express trains arriving/departing around current clock
-      const candidates = [
-        { no: '22436', name: 'Vande Bharat Express', type: 'vb', classStr: 'type-vb', pfx: 'VB', delay: 0, st: -10, et: 5, pf: 1, to: 'Varanasi Jn' },
-        { no: '12302', name: 'Howrah Rajdhani Express', type: 'raj', classStr: 'type-raj', pfx: 'RAJ', delay: 15, st: 12, et: 20, pf: 3, to: 'Howrah Jn' },
-        { no: '12004', name: 'Lucknow Shatabdi Express', type: 'shat', classStr: 'type-shat', pfx: 'SHAT', delay: 0, st: 35, et: 40, pf: 2, to: 'Lucknow Jn' },
-        { no: '12724', name: 'Telangana Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 45, st: 65, et: 75, pf: 5, to: 'Hyderabad Decan' },
-        { no: '12626', name: 'Kerala Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 5, st: 110, et: 120, pf: 4, to: 'Trivandrum Cntl' },
-        { no: '12952', name: 'Mumbai Rajdhani Express', type: 'raj', classStr: 'type-raj', pfx: 'RAJ', delay: 0, st: 160, et: 165, pf: 3, to: 'Mumbai Central' }
-      ];
+      const candidates = getRegionalTrains(code);
 
       let h = `<div class="stn-header-card">
         <div class="stn-title">${he(name || code)} (${he(code)})</div>
@@ -1981,39 +2020,67 @@
     }, 600);
   }
 
+  function getRegionalDirectRoutes(fCode) {
+    const fc = (fCode || '').toUpperCase();
+    const p = n => String(n).padStart(2, '0');
+    function gen(no, name, type, classStr, pfx, depH, depM, durH, durM, runs) {
+      let totalDepM = depH * 60 + depM;
+      let totalDurM = durH * 60 + durM;
+      let totalArrM = totalDepM + totalDurM;
+      let arrH = Math.floor(totalArrM / 60) % 24;
+      let arrM = totalArrM % 60;
+      let dep = p(depH) + ':' + p(depM);
+      let arr = p(arrH) + ':' + p(arrM);
+      let dur = durH + 'h ' + p(durM) + 'm';
+      let isNextDay = Math.floor(totalArrM / 60) >= 24;
+      let arrTag = isNextDay ? `${arr} <span style="font-size:9px;color:var(--accent);font-weight:800">+1d</span>` : arr;
+      return { no, name, type, classStr, pfx, dep, arrTag, dur, runs };
+    }
+
+    const eastPool = ['HWH','SDAH','NJP','JPG','SGUJ','GHY','PNBE','BBS','KGP','MLDT','APDJ','DBRG','KIR','KOAA','SHM','CTC','PURI','ASN','BWN','DGR','LMG','SCL','AGTL'];
+    const northPool = ['NDLS','CDG','ASR','JAT','LKO','CNB','BSB','PRYJ','GKP','DDN','SVDK','UMB','LDH','JUC','SRE','HW','MB','BE','AY','GWL','VGLJ','MTJ','AGC'];
+    const westPool = ['CSMT','BCT','ADI','PUNE','BRC','ST','RJT','BSL','LTT','BDTS','DR','TNA','KYN','BKN','UDZ','KOTA','BVC','BHUJ'];
+
+    if (eastPool.includes(fc)) {
+      return [
+        gen('22301', 'Vande Bharat Express', 'vb', 'type-vb', 'VB', 5, 55, 7, 35, 'All days except Wed'),
+        gen('12343', 'Darjeeling Mail', 'exp', 'type-exp', 'SF', 22, 5, 10, 15, 'Daily'),
+        gen('12377', 'Padatik Express', 'exp', 'type-exp', 'SF', 23, 20, 10, 30, 'Daily'),
+        gen('12041', 'Shatabdi Express', 'shat', 'type-shat', 'SHAT', 14, 25, 8, 10, 'Mon, Tue, Wed, Fri, Sat, Sun')
+      ];
+    }
+    if (northPool.includes(fc)) {
+      return [
+        gen('22436', 'Vande Bharat Express', 'vb', 'type-vb', 'VB', 6, 0, 7, 30, 'All days except Thu'),
+        gen('12302', 'Rajdhani Express', 'raj', 'type-raj', 'RAJ', 16, 50, 10, 25, 'Daily'),
+        gen('12004', 'Shatabdi Superfast', 'shat', 'type-shat', 'SHAT', 6, 10, 6, 30, 'Daily'),
+        gen('12724', 'Superfast Express', 'exp', 'type-exp', 'SF', 16, 0, 11, 45, 'Daily')
+      ];
+    }
+    if (westPool.includes(fc)) {
+      return [
+        gen('22225', 'Vande Bharat Express', 'vb', 'type-vb', 'VB', 6, 5, 6, 30, 'All days except Wed'),
+        gen('12951', 'Mumbai Rajdhani Express', 'raj', 'type-raj', 'RAJ', 17, 0, 15, 30, 'Daily'),
+        gen('12009', 'Shatabdi Express', 'shat', 'type-shat', 'SHAT', 6, 20, 6, 20, 'Mon, Tue, Wed, Fri, Sat'),
+        gen('12925', 'Paschim Express', 'exp', 'type-exp', 'SF', 11, 25, 23, 10, 'Daily')
+      ];
+    }
+    // Default / South Pool
+    return [
+      gen('20607', 'Vande Bharat Express', 'vb', 'type-vb', 'VB', 5, 50, 6, 20, 'All days except Wed'),
+      gen('12626', 'Kerala Express', 'exp', 'type-exp', 'SF', 11, 15, 50, 30, 'Daily'),
+      gen('12639', 'Brindavan Express', 'exp', 'type-exp', 'SF', 7, 50, 5, 50, 'Daily'),
+      gen('12842', 'Coromandel Express', 'exp', 'type-exp', 'SF', 7, 0, 26, 40, 'Daily')
+    ];
+  }
+
   function renderStationToStationResults(fCode, fName, tCode, tName) {
     const lv = DOM.liveView;
     if (!lv) return;
     lv.innerHTML = loader(`Searching direct trains: ${fCode} → ${tCode}…`);
     
     setTimeout(() => {
-      const p = n => String(n).padStart(2, '0');
-      function genTrain(no, name, type, classStr, pfx, depH, depM, durH, durM, runs) {
-        let totalDepM = depH * 60 + depM;
-        let totalDurM = durH * 60 + durM;
-        let totalArrM = totalDepM + totalDurM;
-        let arrH = Math.floor(totalArrM / 60) % 24;
-        let arrM = totalArrM % 60;
-        
-        // format strings perfectly
-        let dep = p(depH) + ':' + p(depM);
-        let arr = p(arrH) + ':' + p(arrM);
-        let dur = durH + 'h ' + p(durM) + 'm';
-        
-        // Calculate days crossed indicator if arrival is on the next day
-        let isNextDay = Math.floor(totalArrM / 60) >= 24;
-        let arrTag = isNextDay ? `${arr} <span style="font-size:9px;color:var(--accent);font-weight:800">+1d</span>` : arr;
-
-        return { no, name, type, classStr, pfx, dep, arrTag, dur, runs };
-      }
-
-      // Generate mathematically consistent scheduled trains
-      const candidates = [
-        genTrain('22436', 'Vande Bharat Express', 'vb', 'type-vb', 'VB', 6, 0, 7, 30, 'All days except Thu'),
-        genTrain('12302', 'Rajdhani Express', 'raj', 'type-raj', 'RAJ', 16, 50, 10, 25, 'Daily'),
-        genTrain('12004', 'Shatabdi Superfast', 'shat', 'type-shat', 'SHAT', 6, 10, 6, 30, 'Daily'),
-        genTrain('12724', 'Superfast Express', 'exp', 'type-exp', 'SF', 16, 0, 11, 45, 'Daily')
-      ];
+      const candidates = getRegionalDirectRoutes(fCode);
 
       let h = `<div class="stn-header-card" style="background:linear-gradient(135deg, #0284c7, #0369a1)">
         <div class="stn-title">${he(fCode)} → ${he(tCode)}</div>
