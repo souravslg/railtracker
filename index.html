@@ -101,36 +101,9 @@
     </div>
   </header>
   <main class="main">
-  <main class="main">
     <!-- Main content area -->
     
-    <!-- Station search wrapper (initially hidden) -->
-    <div id="stationSearchWrap" class="station-search-container" style="display: none;">
-      <div class="station-mode-toggle">
-        <label class="stn-radio"><input type="radio" name="stnSearchType" value="single" checked> Single Station Live</label>
-        <label class="stn-radio"><input type="radio" name="stnSearchType" value="between"> Station to Station</label>
-      </div>
-      <div class="station-inputs-grid">
-        <div class="stn-field-wrapper">
-          <div class="search-field stn-field">
-            <span class="material-symbols-rounded ms" aria-hidden="true">search</span>
-            <input id="stnInputFrom" type="search" placeholder="Enter Station Code or Name (e.g. NDLS)…" autocomplete="off" aria-label="Station search">
-          </div>
-          <div id="stnSuggestFrom" class="suggest-list stn-suggest" role="listbox"></div>
-        </div>
-        <div class="stn-field-wrapper" id="stnInputToWrap" style="display: none;">
-          <div class="search-field stn-field">
-            <span class="material-symbols-rounded ms" aria-hidden="true">flag</span>
-            <input id="stnInputTo" type="search" placeholder="To Station Code or Name (e.g. HWH)…" autocomplete="off" aria-label="Destination station search">
-          </div>
-          <div id="stnSuggestTo" class="suggest-list stn-suggest" role="listbox"></div>
-        </div>
-      </div>
-      <button class="animated-button track-btn stn-submit-btn" id="stnSubmitBtn">
-        <span class="text" id="stnSubmitText">Get Live Station Boards</span>
-        <span class="circle"></span>
-      </button>
-    </div>
+
 
     <div id="searchResults" role="region" aria-label="Search results"></div>
     <div id="liveView"      role="region" aria-label="Live train view"></div>
