@@ -844,6 +844,7 @@
       <div class="sec-title">Train Details</div>
       <div class="info-grid">
         ${cell('Train Number', he(trainNo))}
+        ${cell('Train Name', he(trainName !== trainNo ? trainName : '—'), true)}
         ${cell('Data Source', he(data.dataSource || '—'), true)}
         ${cell('Stops', route.length)}
         ${cell('Progress', progress + '%')}
@@ -1068,6 +1069,12 @@
       const d = await fetchData('/live-status?trainNo=' + encodeURIComponent(num));
       if (token !== liveLoadingToken) return;
       liveLoadingData = d.data;
+      // Try to resolve the official train name from API payload if we only have the number
+      const apiName = d.data?.trainName || d.data?.train_name || d.data?.name;
+      if (apiName && apiName !== num) {
+        curName = apiName;
+        trainNameCache.set(String(num), apiName);
+      }
       liveLoadingReady = true;
       // Render immediately if animation is already done, otherwise tick loop will handle it
       if (liveLoadingPct >= 100) {
