@@ -1649,6 +1649,7 @@
      STATION TRACKING MODULE
   ══════════════════════════════════════════════ */
   const TOP_STATIONS = [
+    // Core Metros & Hubs
     { code: 'NDLS', name: 'New Delhi' },
     { code: 'HWH',  name: 'Howrah Junction' },
     { code: 'CSMT', name: 'Mumbai CSMT' },
@@ -1692,7 +1693,77 @@
     { code: 'RPR',  name: 'Raipur Junction' },
     { code: 'TATA', name: 'Tatanagar Junction' },
     { code: 'DHN',  name: 'Dhanbad Junction' },
-    { code: 'GHY',  name: 'Guwahati' }
+    { code: 'GHY',  name: 'Guwahati' },
+    // Northeast, Bengal & Bihar Expansion
+    { code: 'NJP',  name: 'New Jalpaiguri' },
+    { code: 'JPG',  name: 'Jalpaiguri' },
+    { code: 'SGUJ', name: 'Siliguri Junction' },
+    { code: 'APDJ', name: 'Alipurduar Junction' },
+    { code: 'MLDT', name: 'Malda Town' },
+    { code: 'KIR',  name: 'Katihar Junction' },
+    { code: 'DBRG', name: 'Dibrugarh' },
+    { code: 'NTSK', name: 'New Tinsukia' },
+    { code: 'LMG',  name: 'Lumding Junction' },
+    { code: 'AGTL', name: 'Agartala' },
+    { code: 'SCL',  name: 'Silchar' },
+    { code: 'DMV',  name: 'Dimapur' },
+    { code: 'NHLN', name: 'Naharlagun' },
+    { code: 'GAYA', name: 'Gaya Junction' },
+    { code: 'MFP',  name: 'Muzaffarpur Junction' },
+    { code: 'BGP',  name: 'Bhagalpur' },
+    { code: 'DBG',  name: 'Darbhanga Junction' },
+    { code: 'RNC',  name: 'Ranchi' },
+    { code: 'ROU',  name: 'Rourkela' },
+    { code: 'BSP',  name: 'Bilaspur Junction' },
+    { code: 'DURG', name: 'Durg' },
+    // North & Central Expansion
+    { code: 'ET',   name: 'Itarsi Junction' },
+    { code: 'UJN',  name: 'Ujjain Junction' },
+    { code: 'GWL',  name: 'Gwalior Junction' },
+    { code: 'VGLJ', name: 'VGL Jhansi' },
+    { code: 'MTJ',  name: 'Mathura Junction' },
+    { code: 'AY',   name: 'Ayodhya Dham' },
+    { code: 'BE',   name: 'Bareilly' },
+    { code: 'MB',   name: 'Moradabad' },
+    { code: 'DDN',  name: 'Dehradun' },
+    { code: 'HW',   name: 'Haridwar' },
+    { code: 'SRE',  name: 'Saharanpur' },
+    { code: 'UMB',  name: 'Ambala Cantt' },
+    { code: 'LDH',  name: 'Ludhiana Junction' },
+    { code: 'JUC',  name: 'Jalandhar City' },
+    { code: 'SVDK', name: 'Shri Mata Vaishno Devi Katra' },
+    // West & South Expansion
+    { code: 'BKN',  name: 'Bikaner Junction' },
+    { code: 'UDZ',  name: 'Udaipur City' },
+    { code: 'KOTA', name: 'Kota Junction' },
+    { code: 'BVC',  name: 'Bhavnagar Terminus' },
+    { code: 'BHUJ', name: 'Bhuj' },
+    { code: 'LTT',  name: 'Lokmanya Tilak Terminus' },
+    { code: 'BDTS', name: 'Bandra Terminus' },
+    { code: 'DR',   name: 'Dadar Central' },
+    { code: 'TNA',  name: 'Thane' },
+    { code: 'KYN',  name: 'Kalyan Junction' },
+    { code: 'BSL',  name: 'Bhusaval Junction' },
+    { code: 'MAO',  name: 'Madgaon Junction' },
+    { code: 'VSG',  name: 'Vasco Da Gama' },
+    { code: 'CLT',  name: 'Kozhikode Main' },
+    { code: 'CAPE', name: 'Kanniyakumari' },
+    { code: 'MDU',  name: 'Madurai Junction' },
+    { code: 'TPJ',  name: 'Tiruchirappalli' },
+    { code: 'CBE',  name: 'Coimbatore Junction' },
+    { code: 'SA',   name: 'Salem Junction' },
+    { code: 'ED',   name: 'Erode Junction' },
+    { code: 'MS',   name: 'Chennai Egmore' },
+    { code: 'TBM',  name: 'Tambaram' },
+    { code: 'RU',   name: 'Renigunta Junction' },
+    { code: 'GNT',  name: 'Guntur Junction' },
+    { code: 'CTC',  name: 'Cuttack' },
+    { code: 'PURI', name: 'Puri' },
+    { code: 'SC',   name: 'Secunderabad Junction' },
+    { code: 'KCG',  name: 'Kacheguda' },
+    { code: 'WL',   name: 'Warangal' },
+    { code: 'MYS',  name: 'Mysuru Junction' },
+    { code: 'YPR',  name: 'Yesvantpur Junction' }
   ];
 
   const DOM_STN = {
@@ -1757,7 +1828,7 @@
         if (!q) { suggestEl.innerHTML = ''; return; }
         const matches = TOP_STATIONS.filter(s => s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)).slice(0, 8);
         if (!matches.length) {
-          suggestEl.innerHTML = `<div class="suggest-item" style="pointer-events:none;color:var(--text3)">No stations found</div>`;
+          suggestEl.innerHTML = `<div class="suggest-item" style="pointer-events:none;color:var(--text3)">Press Submit to search custom station</div>`;
           return;
         }
         suggestEl.innerHTML = matches.map(s => `
@@ -1783,37 +1854,51 @@
     setupStnAutocomplete(inputFrom, suggestFrom);
     setupStnAutocomplete(inputTo, suggestTo);
 
-    // Submit station queries
+    // Submit station queries with universal custom fallback support
     if (submitBtn) submitBtn.addEventListener('click', () => {
-      let fVal = (inputFrom?.value || '').split('-')[0].trim().toUpperCase();
-      let tVal = (inputTo?.value || '').split('-')[0].trim().toUpperCase();
-      
-      // Attempt generic code search if not split
-      if (!fVal && inputFrom?.value) fVal = inputFrom.value.trim().toUpperCase();
-      if (!tVal && inputTo?.value) tVal = inputTo.value.trim().toUpperCase();
-
-      const stnObj = TOP_STATIONS.find(s => s.code === fVal || s.name.toUpperCase() === fVal);
-      const fCode = stnObj ? stnObj.code : fVal;
-      const fName = stnObj ? stnObj.name : fVal;
+      let rawFrom = (inputFrom?.value || '').trim();
+      let rawTo = (inputTo?.value || '').trim();
 
       const isBetween = Array.from(radios || []).find(r => r.checked)?.value === 'between';
 
-      if (!fCode) {
+      if (!rawFrom) {
         toast('Please enter a source station', 'error');
         return;
       }
 
+      // Parse code & name gracefully
+      function parseStnInput(str) {
+        let code = str.split('-')[0].trim().toUpperCase();
+        let name = str.includes('-') ? str.split('-').slice(1).join('-').trim() : str;
+        // check if matches any top station exactly or partially
+        const found = TOP_STATIONS.find(s => s.code.toLowerCase() === str.toLowerCase() || s.name.toLowerCase() === str.toLowerCase() || s.code === code);
+        if (found) {
+          return { code: found.code, name: found.name };
+        }
+        // universal fallback
+        if (code.length > 5 && !str.includes('-')) {
+          // If typed string has no hyphen and is long, treat it as a station name and derive a neat display code
+          let genCode = str.replace(/[^a-zA-Z]/g, '').slice(0, 4).toUpperCase();
+          return { code: genCode, name: capitalize(str) };
+        }
+        return { code: code || 'STN', name: capitalize(name || str) };
+      }
+
+      function capitalize(s) {
+        return s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      }
+
+      const fObj = parseStnInput(rawFrom);
+
       if (isBetween) {
-        const destObj = TOP_STATIONS.find(s => s.code === tVal || s.name.toUpperCase() === tVal);
-        const tCode = destObj ? destObj.code : tVal;
-        const tName = destObj ? destObj.name : tVal;
-        if (!tCode) {
+        if (!rawTo) {
           toast('Please enter a destination station', 'error');
           return;
         }
-        renderStationToStationResults(fCode, fName, tCode, tName);
+        const tObj = parseStnInput(rawTo);
+        renderStationToStationResults(fObj.code, fObj.name, tObj.code, tObj.name);
       } else {
-        renderLiveStationBoard(fCode, fName);
+        renderLiveStationBoard(fObj.code, fObj.name);
       }
     });
   }
