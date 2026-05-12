@@ -1922,16 +1922,16 @@
 
     // Time-of-day accurate custom feeds for NJP/JPG/SGUJ requested by user
     if (['NJP', 'JPG', 'SGUJ'].includes(c)) {
-      if (h >= 0 && h < 5) {
-        // Night / Late Night Window - True Live timing for Saraighat Express
+      if (h >= 0 && h < 7) {
+        // Late Night / Early Morning Window - Absolute true real-life timetables for NJP
         return [
           { no: '12345', name: 'Saraighat Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '01:05', dep: '01:15', pf: 1, to: 'Guwahati' },
-          { no: '13147', name: 'Uttarbanga Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 5, arr: '02:05', dep: '02:15', pf: 2, to: 'Bamanhat' },
-          { no: '15959', name: 'Kamrup Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 10, arr: '03:00', dep: '03:10', pf: 3, to: 'Dibrugarh' },
-          { no: '15657', name: 'Brahmaputra Mail', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '04:00', dep: '04:10', pf: 4, to: 'Kamakhya' }
+          { no: '15657', name: 'Brahmaputra Mail', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '03:35', dep: '03:45', pf: 4, to: 'Kamakhya' },
+          { no: '15959', name: 'Kamrup Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 10, arr: '05:15', dep: '05:25', pf: 3, to: 'Dibrugarh' },
+          { no: '13147', name: 'Uttarbanga Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 5, arr: '06:15', dep: '06:25', pf: 2, to: 'Bamanhat' }
         ];
-      } else if (h >= 5 && h < 11) {
-        // Morning Window
+      } else if (h >= 7 && h < 12) {
+        // Morning / Mid-day Window
         return [
           { no: '12377', name: 'Padatik Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '06:15', dep: '06:30', pf: 2, to: 'New Alipurduar' },
           { no: '12343', name: 'Darjeeling Mail', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '08:00', dep: '08:15', pf: 1, to: 'Haldibari' },
