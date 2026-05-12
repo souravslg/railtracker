@@ -1917,17 +1917,49 @@
   // Premium intelligent simulated route generation with Zone-Awareness
   function getRegionalTrains(code) {
     const c = (code || '').toUpperCase();
-    const eastPool = ['HWH','SDAH','NJP','JPG','SGUJ','GHY','PNBE','BBS','KGP','MLDT','APDJ','DBRG','KIR','KOAA','SHM','CTC','PURI','ASN','BWN','DGR','LMG','SCL','AGTL'];
+    const now = new Date();
+    const h = now.getHours();
+
+    // Time-of-day accurate custom feeds for NJP/JPG/SGUJ requested by user
+    if (['NJP', 'JPG', 'SGUJ'].includes(c)) {
+      if (h >= 0 && h < 5) {
+        // Night / Late Night Window
+        return [
+          { no: '12345', name: 'Saraighat Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '01:20', dep: '01:30', pf: 1, to: 'Guwahati' },
+          { no: '13147', name: 'Uttarbanga Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 5, arr: '02:20', dep: '02:30', pf: 2, to: 'Bamanhat' },
+          { no: '15959', name: 'Kamrup Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 10, arr: '03:10', dep: '03:25', pf: 3, to: 'Dibrugarh' },
+          { no: '15657', name: 'Brahmaputra Mail', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '04:10', dep: '04:20', pf: 4, to: 'Kamakhya' }
+        ];
+      } else if (h >= 5 && h < 11) {
+        // Morning Window
+        return [
+          { no: '12377', name: 'Padatik Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '06:15', dep: '06:30', pf: 2, to: 'New Alipurduar' },
+          { no: '12343', name: 'Darjeeling Mail', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '08:00', dep: '08:15', pf: 1, to: 'Haldibari' },
+          { no: '13149', name: 'Kanchan Kanya Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 15, arr: '08:30', dep: '08:45', pf: 3, to: 'Alipurduar Jn' },
+          { no: '12042', name: 'New Jalpaiguri Shatabdi', type: 'shat', classStr: 'type-shat', pfx: 'SHAT', delay: 0, arr: '05:30', dep: '05:30', pf: 1, to: 'Howrah Jn' }
+        ];
+      } else {
+        // Afternoon / Evening Window
+        return [
+          { no: '22301', name: 'Vande Bharat Express', type: 'vb', classStr: 'type-vb', pfx: 'VB', delay: 0, arr: '13:25', dep: '13:25', pf: 1, to: 'New Jalpaiguri' },
+          { no: '22302', name: 'Vande Bharat Express', type: 'vb', classStr: 'type-vb', pfx: 'VB', delay: 0, arr: '15:00', dep: '15:05', pf: 1, to: 'Howrah Jn' },
+          { no: '12041', name: 'Howrah Shatabdi Express', type: 'shat', classStr: 'type-shat', pfx: 'SHAT', delay: 5, arr: '13:45', dep: '13:45', pf: 2, to: 'New Jalpaiguri' },
+          { no: '12344', name: 'Darjeeling Mail', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, arr: '19:40', dep: '19:55', pf: 1, to: 'Sealdah' }
+        ];
+      }
+    }
+
+    const eastPool = ['HWH','SDAH','GHY','PNBE','BBS','KGP','MLDT','APDJ','DBRG','KIR','KOAA','SHM','CTC','PURI','ASN','BWN','DGR','LMG','SCL','AGTL'];
     const northPool = ['NDLS','CDG','ASR','JAT','LKO','CNB','BSB','PRYJ','GKP','DDN','SVDK','UMB','LDH','JUC','SRE','HW','MB','BE','AY','GWL','VGLJ','MTJ','AGC'];
     const westPool = ['CSMT','BCT','ADI','PUNE','BRC','ST','RJT','BSL','LTT','BDTS','DR','TNA','KYN','BKN','UDZ','KOTA','BVC','BHUJ'];
 
     if (eastPool.includes(c)) {
       return [
+        { no: '12345', name: 'Saraighat Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, st: -5, et: 10, pf: 1, to: 'Guwahati' },
         { no: '12343', name: 'Darjeeling Mail', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 0, st: -15, et: 5, pf: 1, to: 'Haldibari' },
         { no: '22301', name: 'Vande Bharat Express', type: 'vb', classStr: 'type-vb', pfx: 'VB', delay: 0, st: -5, et: 10, pf: 2, to: 'New Jalpaiguri' },
         { no: '12377', name: 'Padatik Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 10, st: 20, et: 30, pf: 3, to: 'New Alipurduar' },
         { no: '15959', name: 'Kamrup Express', type: 'exp', classStr: 'type-exp', pfx: 'EXP', delay: 25, st: 45, et: 55, pf: 4, to: 'Dibrugarh' },
-        { no: '12041', name: 'Shatabdi Express', type: 'shat', classStr: 'type-shat', pfx: 'SHAT', delay: 0, st: 90, et: 95, pf: 2, to: 'Howrah Jn' },
         { no: '12505', name: 'Northeast Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', delay: 5, st: 130, et: 140, pf: 5, to: 'Kamakhya' }
       ];
     }
@@ -1978,11 +2010,9 @@
       <div class="stn-trains-grid">`;
 
       candidates.forEach(t => {
-        // compute beautiful times
-        const arrDt = new Date(now.getTime() + t.st * 60000);
-        const depDt = new Date(now.getTime() + t.et * 60000);
-        const arrStr = pad(arrDt.getHours()) + ':' + pad(arrDt.getMinutes());
-        const depStr = pad(depDt.getHours()) + ':' + pad(depDt.getMinutes());
+        // compute beautiful times supporting literal real-life strings if supplied
+        const arrStr = t.arr || pad(new Date(now.getTime() + t.st * 60000).getHours()) + ':' + pad(new Date(now.getTime() + t.st * 60000).getMinutes());
+        const depStr = t.dep || pad(new Date(now.getTime() + t.et * 60000).getHours()) + ':' + pad(new Date(now.getTime() + t.et * 60000).getMinutes());
 
         const statusHtml = t.delay > 0 
           ? `<span class="stn-status-pill stn-delayed"><span style="font-size:8px">●</span> Delayed +${t.delay}m</span>`
