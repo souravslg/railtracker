@@ -639,7 +639,7 @@
       </div>
       <div class="lp-top">
         <div>
-          <div class="lp-title">${he(trainName)}</div>
+          <div class="lp-title">${he(trainNo)}${trainName && trainName !== trainNo ? ' — ' + he(trainName) : ''}</div>
           <div class="lp-route"><span class="material-symbols-rounded" style="font-size:14px">train</span>${he(origin?.station_name || '—')} → ${he(dest?.station_name || '—')}</div>
         </div>
         <button class="fav-btn${favFlag ? ' active' : ''}" id="lpFavBtn" title="Favourite" style="margin-top:4px">
