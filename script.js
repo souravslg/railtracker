@@ -1987,11 +1987,32 @@
     lv.innerHTML = loader(`Searching direct trains: ${fCode} → ${tCode}…`);
     
     setTimeout(() => {
+      const p = n => String(n).padStart(2, '0');
+      function genTrain(no, name, type, classStr, pfx, depH, depM, durH, durM, runs) {
+        let totalDepM = depH * 60 + depM;
+        let totalDurM = durH * 60 + durM;
+        let totalArrM = totalDepM + totalDurM;
+        let arrH = Math.floor(totalArrM / 60) % 24;
+        let arrM = totalArrM % 60;
+        
+        // format strings perfectly
+        let dep = p(depH) + ':' + p(depM);
+        let arr = p(arrH) + ':' + p(arrM);
+        let dur = durH + 'h ' + p(durM) + 'm';
+        
+        // Calculate days crossed indicator if arrival is on the next day
+        let isNextDay = Math.floor(totalArrM / 60) >= 24;
+        let arrTag = isNextDay ? `${arr} <span style="font-size:9px;color:var(--accent);font-weight:800">+1d</span>` : arr;
+
+        return { no, name, type, classStr, pfx, dep, arrTag, dur, runs };
+      }
+
+      // Generate mathematically consistent scheduled trains
       const candidates = [
-        { no: '22436', name: 'Vande Bharat Express', type: 'vb', classStr: 'type-vb', pfx: 'VB', dep: '06:00', arr: '14:00', dur: '8h 00m', runs: 'All days except Thu' },
-        { no: '12302', name: 'Rajdhani Express', type: 'raj', classStr: 'type-raj', pfx: 'RAJ', dep: '16:50', arr: '09:55', dur: '17h 05m', runs: 'Daily' },
-        { no: '12004', name: 'Shatabdi Superfast', type: 'shat', classStr: 'type-shat', pfx: 'SHAT', dep: '06:10', arr: '12:40', dur: '6h 30m', runs: 'Daily' },
-        { no: '12724', name: 'Superfast Express', type: 'exp', classStr: 'type-exp', pfx: 'SF', dep: '16:00', arr: '19:00', dur: '27h 00m', runs: 'Daily' }
+        genTrain('22436', 'Vande Bharat Express', 'vb', 'type-vb', 'VB', 6, 0, 7, 30, 'All days except Thu'),
+        genTrain('12302', 'Rajdhani Express', 'raj', 'type-raj', 'RAJ', 16, 50, 10, 25, 'Daily'),
+        genTrain('12004', 'Shatabdi Superfast', 'shat', 'type-shat', 'SHAT', 6, 10, 6, 30, 'Daily'),
+        genTrain('12724', 'Superfast Express', 'exp', 'type-exp', 'SF', 16, 0, 11, 45, 'Daily')
       ];
 
       let h = `<div class="stn-header-card" style="background:linear-gradient(135deg, #0284c7, #0369a1)">
@@ -2020,7 +2041,7 @@
             </div>
             <div class="stn-time-block" style="align-items:flex-end">
               <span class="stn-time-lbl">Arrives</span>
-              <span class="stn-time-val">${t.arr}</span>
+              <span class="stn-time-val">${t.arrTag}</span>
             </div>
           </div>
           <div style="font-size:11px;color:var(--text3);text-align:right">Runs: ${t.runs}</div>
