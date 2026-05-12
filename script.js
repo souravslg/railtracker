@@ -986,7 +986,7 @@
   }
 
   function wireShare(trainNo, trainName, curStn, curCode, dest, isLate, delayMins, progress) {
-    const shareText = `🚆 ${trainNo} — ${trainName}\n📍 At: ${curStn ? curStn.station_name : curCode || '—'}\n⏱ Delay: ${isLate ? '+' + delayMins + ' min' : 'On time'}\n🏁 Destination: ${dest ? dest.station_name : '—'}\n📊 Progress: ${progress}%\n\nTracked via TrackIt`;
+    const shareText = `🚆 ${trainNo} — ${trainName}\n📍 At: ${curStn ? curStn.station_name : curCode || '—'}\n⏱ Delay: ${isLate ? '+' + delayMins + ' min' : 'On time'}\n🏁 Destination: ${dest ? dest.station_name : '—'}\n📊 Progress: ${progress}%\n\nTracked via Train Tracker`;
     const cpBtn = $('copyShareBtn');
     if (cpBtn) cpBtn.addEventListener('click', function () {
       navigator.clipboard.writeText(shareText)
@@ -1212,7 +1212,7 @@
       recent.forEach((r, i) => h += `<div class="r-chip" data-recent-i="${i}"><span class="r-num">${he(r.num)}</span><span>${he(r.name)}</span></div>`);
       h += `</div>`;
     }
-    h += `<div class="howto-card"><div class="howto-title">How to use TrackIt</div><div class="howto-items">
+    h += `<div class="howto-card"><div class="howto-title">How to use Train Tracker</div><div class="howto-items">
       <div class="howto-item"><div class="howto-icon-bg" style="background:rgba(91,63,255,.08);font-size:18px;color:var(--accent)">🔍</div><div><h4>Search</h4><p>Type a train number (e.g. 12728) or name — or press <kbd>/</kbd></p></div></div>
       <div class="howto-item"><div class="howto-icon-bg" style="background:rgba(220,38,38,.08);font-size:18px">📍</div><div><h4>Track</h4><p>Click Track to see real-time position, platform &amp; delay info</p></div></div>
       <div class="howto-item"><div class="howto-icon-bg" style="background:rgba(217,119,6,.08);font-size:18px">⭐</div><div><h4>Favourites</h4><p>Star trains to save them for quick access</p></div></div>

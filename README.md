@@ -1,4 +1,4 @@
-# 🚆 TrackIt — Live Indian Train Tracker
+# 🚆 Train Tracker — Live Indian Train Tracker
 
 ![HTML](https://img.shields.io/badge/Made%20With-HTML-orange)
 ![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-yellow)
