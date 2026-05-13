@@ -300,7 +300,9 @@
       updateAR();
     }
     try {
-      const d = await fetchData('/live-status?trainNo=' + encodeURIComponent(curNum));
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const d = await fetchData(`/live-status?trainNo=${encodeURIComponent(curNum)}&startDate=${today}`);
       lastRefTs = new Date();
       renderLive(d.data, curNum, curName);
       updateLastRef();
@@ -1029,7 +1031,9 @@
     if (prefetchInFlight.has(num)) return;
     prefetchInFlight.add(num);
     try {
-      await fetchData('/live-status?trainNo=' + encodeURIComponent(num));
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      await fetchData(`/live-status?trainNo=${encodeURIComponent(num)}&startDate=${today}`);
       // Older browsers may not support CSS.escape or complex selectors —
       // fall back to filtering all nodes with the attribute.
       document.querySelectorAll('[data-prefetch-num]').forEach(el => {
@@ -1063,7 +1067,9 @@
     clearSuggest(); si.value = '';
     const token = startLiveLoading(num, resolvedName, triggerEl);
     try {
-      const d = await fetchData('/live-status?trainNo=' + encodeURIComponent(num));
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const d = await fetchData(`/live-status?trainNo=${encodeURIComponent(num)}&startDate=${today}`);
       if (token !== liveLoadingToken) return;
       liveLoadingData = d.data;
       // Try to resolve the official train name from API payload if we only have the number
