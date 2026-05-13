@@ -87,7 +87,7 @@
   const searchCacheMemory = new Map();
 
   // Use single canonical API endpoint (Sujith). Removed legacy Vercel endpoint.
-  const BASE = '/api/train';
+  const BASE = 'https://sujith.bhargavtodimela4.workers.dev';
   const SEARCH_CACHE_KEY = 'tt-search-cache';
   const LIVE_CACHE_KEY   = 'tt-live-cache';
   const ROUTE_BASE_PATH  = (() => {
@@ -162,59 +162,6 @@
       }
       throw new ParseError('Invalid JSON response');
     }
-  }
-
-  /** Map RailRadar API structure to internal app structure */
-  function transformRailRadarData(d) {
-    if (!d) return {};
-    const payload = d.data || d;
-    const live = payload.liveData || payload;
-    const staticInfo = payload.train || {};
-    const staticRoute = payload.route || [];
-
-    // Base route from static data
-    const mappedRoute = staticRoute.map(s => ({
-      station_name: s.stationName || '',
-      stationCode: s.stationCode,
-      platformNumber: s.livePlatform || s.platform,
-      actualArrivalTime: s.actualArrivalTime || null,
-      scheduledArrivalTime: s.scheduledArrival || null,
-      actualDepartureTime: s.actualDepartureTime || null,
-      scheduledDepartureTime: s.scheduledDeparture || null,
-      stopIndex: s.sequence
-    }));
-
-    // Overlay live data timestamps if available
-    if (live.route && Array.isArray(live.route)) {
-      live.route.forEach(ls => {
-        const match = mappedRoute.find(r => r.stationCode === ls.stationCode && (r.stopIndex === ls.sequence || !r.stopIndex));
-        if (match) {
-          if (ls.actualArrival)   match.actualArrivalTime   = ls.actualArrival;
-          if (ls.actualDeparture) match.actualDepartureTime = ls.actualDeparture;
-          if (ls.scheduledArrival)   match.scheduledArrivalTime   = ls.scheduledArrival;
-          if (ls.scheduledDeparture) match.scheduledDepartureTime = ls.scheduledDeparture;
-          if (ls.platform) match.platformNumber = ls.platform;
-        }
-      });
-    }
-
-    return {
-      trainName: staticInfo.trainName || live.trainName || '',
-      route: mappedRoute,
-      currentPosition: {
-        stationCode: live.currentLocation?.stationCode,
-        distanceFromOriginKm: live.currentLocation?.distanceFromOriginKm,
-        distanceFromLastStationKm: live.currentLocation?.distanceFromLastStationKm,
-        latLng: {
-          latitude: live.currentLocation?.latitude,
-          longitude: live.currentLocation?.longitude
-        },
-        speedKmph: live.currentLocation?.speedKmph
-      },
-      delayInSecs: (live.overallDelayMinutes || 0) * 60,
-      lastUpdatedTimestamp: live.lastUpdatedAt ? new Date(live.lastUpdatedAt).getTime() / 1000 : null,
-      dataSource: live.dataSource || 'RailRadar'
-    };
   }
 
   async function resolveTrainName(num, fallbackName = '') {
@@ -353,10 +300,9 @@
       updateAR();
     }
     try {
-      const d = await fetchData(`/api/v1/trains/${encodeURIComponent(curNum)}?dataType=full`);
-      const mapped = transformRailRadarData(d);
+      const d = await fetchData('/live-status?trainNo=' + encodeURIComponent(curNum));
       lastRefTs = new Date();
-      renderLive(mapped, curNum, curName);
+      renderLive(d.data, curNum, curName);
       updateLastRef();
       if (!silent) toast('Refreshed!', 'done');
       else toast('Auto-refreshed', 'info');
@@ -430,14 +376,8 @@
     const loadStartedAt = Date.now();
     startSearchLoading(q);
     try {
-      const d     = await fetchData('/api/v1/search/trains?query=' + encodeURIComponent(q));
-      const raw   = d?.data || d?.trains || d || [];
-      const trains = (Array.isArray(raw) ? raw : []).map(t => ({
-        number: t.trainNumber || t.number,
-        name: t.trainName || t.name,
-        fromStnCode: t.sourceStationCode || t.fromStnCode,
-        toStnCode: t.destinationStationCode || t.toStnCode
-      }));
+      const d     = await fetchData('/search?q=' + encodeURIComponent(q));
+      const trains = d?.data ?? [];
       searchRes = trains;
       saveSearchCache(q, trains);
       await keepSearchLoadingVisible(loadStartedAt);
@@ -1089,7 +1029,7 @@
     if (prefetchInFlight.has(num)) return;
     prefetchInFlight.add(num);
     try {
-      await fetchData(`/api/v1/trains/${encodeURIComponent(num)}?dataType=full`);
+      await fetchData('/live-status?trainNo=' + encodeURIComponent(num));
       // Older browsers may not support CSS.escape or complex selectors —
       // fall back to filtering all nodes with the attribute.
       document.querySelectorAll('[data-prefetch-num]').forEach(el => {
@@ -1123,12 +1063,11 @@
     clearSuggest(); si.value = '';
     const token = startLiveLoading(num, resolvedName, triggerEl);
     try {
-      const d = await fetchData(`/api/v1/trains/${encodeURIComponent(num)}?dataType=full`);
+      const d = await fetchData('/live-status?trainNo=' + encodeURIComponent(num));
       if (token !== liveLoadingToken) return;
-      const mapped = transformRailRadarData(d);
-      liveLoadingData = mapped;
+      liveLoadingData = d.data;
       // Try to resolve the official train name from API payload if we only have the number
-      const apiName = mapped.trainName;
+      const apiName = d.data?.trainName || d.data?.train_name || d.data?.name;
       if (apiName && apiName !== num) {
         curName = apiName;
         trainNameCache.set(String(num), apiName);
