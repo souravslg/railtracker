@@ -170,9 +170,10 @@
   /** Map RailRadar API structure to internal app structure */
   function transformRailRadarData(d) {
     if (!d) return {};
-    const live = d.liveData || d;
-    const staticInfo = d.train || {};
-    const staticRoute = d.route || [];
+    const payload = d.data || d;
+    const live = payload.liveData || payload;
+    const staticInfo = payload.train || {};
+    const staticRoute = payload.route || [];
 
     // Base route from static data
     const mappedRoute = staticRoute.map(s => ({
@@ -433,7 +434,8 @@
     startSearchLoading(q);
     try {
       const d     = await fetchData('/api/v1/search/trains?query=' + encodeURIComponent(q));
-      const trains = (d?.trains || d || []).map(t => ({
+      const raw   = d?.data || d?.trains || d || [];
+      const trains = (Array.isArray(raw) ? raw : []).map(t => ({
         number: t.trainNumber || t.number,
         name: t.trainName || t.name,
         fromStnCode: t.sourceStationCode || t.fromStnCode,

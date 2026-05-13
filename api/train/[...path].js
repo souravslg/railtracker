@@ -2,10 +2,8 @@ export default async function handler(req, res) {
   const { path } = req.query;
   const pathStr = Array.isArray(path) ? path.join('/') : path;
   
-  // Construct the target URL on railradar.in
-  // We remove the 'api/v1' from the incoming path because we'll add it back or handle it.
-  // Actually, let's just proxy exactly what comes in.
-  const targetUrl = new URL(`https://railradar.in/${pathStr}`);
+  // Construct the target URL on api.railradar.in
+  const targetUrl = new URL(`https://api.railradar.in/${pathStr}`);
   
   // Forward all query parameters except 'path'
   Object.keys(req.query).forEach(key => {
