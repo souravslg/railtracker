@@ -87,7 +87,7 @@
   const searchCacheMemory = new Map();
 
   // Use single canonical API endpoint (Sujith). Removed legacy Vercel endpoint.
-  const BASE = 'https://sujith.bhargavtodimela4.workers.dev';
+  const BASE = 'https://railradar.in';
   const SEARCH_CACHE_KEY = 'tt-search-cache';
   const LIVE_CACHE_KEY   = 'tt-live-cache';
   const ROUTE_BASE_PATH  = (() => {
