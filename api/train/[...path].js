@@ -28,15 +28,19 @@ export default async function handler(req, res) {
       return res.status(response.status).json({ error: 'Upstream error', status: response.status });
     }
 
-    const data = await response.json();
-    
-    // Set CORS headers just in case
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    
-    return res.status(200).json(data);
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      return res.status(200).json(data);
+    } else {
+      const text = await response.text();
+      console.error('Non-JSON response from upstream:', text.slice(0, 200));
+      return res.status(502).json({ error: 'Upstream returned non-JSON response', details: text.slice(0, 200) });
+    }
   } catch (error) {
     console.error('Proxy error:', error);
-    return res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    return res.status(500).json({ error: 'Proxy Internal Error', message: error.message });
   }
 }

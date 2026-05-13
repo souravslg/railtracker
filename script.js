@@ -151,18 +151,15 @@
   }
 
   async function parseResp(r) {
-    let buf;
-    try { buf = await r.arrayBuffer(); } catch (e) { throw new NetworkError('Failed to read response body'); }
-    let s;
     try {
-      s = new TextDecoder().decode(buf).trim();
+      return await r.json();
     } catch (e) {
-      throw new ParseError('Failed to decode response body');
-    }
-    if (!s) return {};
-    try {
-      return JSON.parse(s);
-    } catch (e) {
+      // If JSON parsing fails, try to get text for debugging or throw ParseError
+      let txt = '';
+      try { txt = await r.text(); } catch (e2) {}
+      if (txt && txt.trim().startsWith('<')) {
+        throw new ParseError('Received HTML instead of JSON');
+      }
       throw new ParseError('Invalid JSON response');
     }
   }
