@@ -594,9 +594,12 @@
     const remainingLabel = curIdx >= 0 ? 'Stops left' : 'Total stops';
 
     let etaStr = '—'; let etaTs = 0;
-    if (nextStop?.scheduledArrivalTime) {
-      etaTs  = (nextStop.scheduledArrivalTime + (data.delayInSecs || 0)) * 1000;
-      etaStr = new Date(etaTs).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    if (nextStop) {
+      const liveArrivalSecs = nextStop.actualArrivalTime || (nextStop.scheduledArrivalTime ? nextStop.scheduledArrivalTime + (data.delayInSecs || 0) : null);
+      if (liveArrivalSecs) {
+        etaTs  = liveArrivalSecs * 1000;
+        etaStr = new Date(etaTs).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+      }
     }
     const speedKmh = data.currentPosition?.speedKmph != null ? Math.round(data.currentPosition.speedKmph) : null;
     const favFlag  = isFav(trainNo);
@@ -715,8 +718,9 @@
   function renderCountdownRow(nextStop, etaStr, etaTs) {
     const schTs = nextStop?.scheduledArrivalTime || 0;
     const expTs = etaTs / 1000;
-    const aD = Math.max(0, expTs - schTs);
-    const hasDelay = aD > CFG.DELAY_CHIP_SECS;
+    const isDifferent = schTs > 0 && expTs > 0 && schTs !== expTs;
+    const isLate = expTs > schTs;
+    const isEarly = expTs < schTs;
 
     return `<div class="cd-row">
       <div><div class="cd-lbl">ARRIVES IN</div><div class="cd-val" id="cdVal">--:--</div></div>
@@ -725,9 +729,9 @@
         <div class="cd-code">${he(nextStop?.stationCode || '')} · PF ${he(nextStop?.platformNumber || '—')}</div>
       </div>
       <div class="cd-right">
-        <div class="cd-sched-lbl">${hasDelay ? 'EXPECTED' : 'SCHEDULED'}</div>
-        ${hasDelay ? `<div class="t-sch" style="font-size:11px;margin-bottom:2px">${fmt(schTs)}</div>` : ''}
-        <div class="cd-sched-val" style="${hasDelay ? 'color:var(--red)' : ''}">${etaStr}</div>
+        <div class="cd-sched-lbl">${isDifferent ? (isEarly ? 'EARLY' : 'EXPECTED') : 'SCHEDULED'}</div>
+        ${isDifferent ? `<div class="t-sch" style="font-size:11px;margin-bottom:2px">${fmt(schTs)}</div>` : ''}
+        <div class="cd-sched-val" style="${isLate ? 'color:var(--red)' : isEarly ? 'color:var(--green)' : ''}">${etaStr}</div>
       </div>
     </div>`;
   }
