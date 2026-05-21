@@ -713,6 +713,7 @@
   }
 
   function renderCountdownRow(nextStop, etaStr) {
+    const aD = delaySecs(nextStop?.actualArrivalTime, nextStop?.scheduledArrivalTime);
     return `<div class="cd-row">
       <div><div class="cd-lbl">ARRIVES IN</div><div class="cd-val" id="cdVal">--:--</div></div>
       <div style="flex:1">
@@ -720,8 +721,9 @@
         <div class="cd-code">${he(nextStop?.stationCode || '')} · PF ${he(nextStop?.platformNumber || '—')}</div>
       </div>
       <div class="cd-right">
-        <div class="cd-sched-lbl">SCHEDULED</div>
-        <div class="cd-sched-val">${fmt(nextStop?.scheduledArrivalTime)}</div>
+        <div class="cd-sched-lbl">${aD > CFG.DELAY_CHIP_SECS ? 'EXPECTED' : 'SCHEDULED'}</div>
+        ${aD > CFG.DELAY_CHIP_SECS ? `<div class="t-sch" style="font-size:11px;margin-bottom:2px">${fmt(nextStop?.scheduledArrivalTime)}</div>` : ''}
+        <div class="cd-sched-val" style="${aD > CFG.DELAY_CHIP_SECS ? 'color:var(--red)' : ''}">${fmt(nextStop?.actualArrivalTime || nextStop?.scheduledArrivalTime)}</div>
       </div>
     </div>`;
   }
