@@ -936,7 +936,7 @@
           iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
           shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
         });
-        const isMobile = window.innerWidth <= 600;
+        const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
         leafletMap = L.map(container, {
           zoomControl: !isMobile,
           attributionControl: true,
@@ -1002,7 +1002,7 @@
       if (lat != null && lng != null) {
         setTimeout(() => {
           if (trainMapOuter && !trainMapOuter.classList.contains('open')) {
-            const isMobile = window.innerWidth <= 600;
+            const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
             if (!isMobile) {
               trainMapOuter.classList.add('open');
               trainMapToggle.classList.add('open');
