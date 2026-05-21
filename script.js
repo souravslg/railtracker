@@ -936,7 +936,14 @@
           iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
           shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
         });
-        leafletMap = L.map(container, { zoomControl: true, attributionControl: true, scrollWheelZoom: true });
+        const isMobile = window.innerWidth <= 600;
+        leafletMap = L.map(container, {
+          zoomControl: !isMobile,
+          attributionControl: true,
+          scrollWheelZoom: !isMobile,
+          dragging: !isMobile,
+          touchZoom: !isMobile
+        });
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(leafletMap);
         leafletMap.setView([lat, lng], 14);
         L.circle([lat, lng], { radius: CFG.ACCURACY_CIRCLE_M, className: 'leaflet-accuracy-circle' }).addTo(leafletMap);
@@ -991,13 +998,16 @@
         this.classList.toggle('open', !isOpen);
         if (!isOpen) buildLeafletMap();
       });
-      // Auto-open when coords available
+      // Auto-open when coords available (desktop only to prevent scroll blocking on mobile)
       if (lat != null && lng != null) {
         setTimeout(() => {
           if (trainMapOuter && !trainMapOuter.classList.contains('open')) {
-            trainMapOuter.classList.add('open');
-            trainMapToggle.classList.add('open');
-            buildLeafletMap();
+            const isMobile = window.innerWidth <= 600;
+            if (!isMobile) {
+              trainMapOuter.classList.add('open');
+              trainMapToggle.classList.add('open');
+              buildLeafletMap();
+            }
           }
         }, CFG.MAP_AUTO_OPEN_MS);
       }
