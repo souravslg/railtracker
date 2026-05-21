@@ -516,13 +516,13 @@ tr.row-fut td{opacity:.4}
 .live-loading-title{font-size:18px}
 .live-loading-copy{gap:4px;margin-bottom:14px}
 .live-loading-sub{font-size:12px}
-.tab-btn{font-size:11px;padding:8px 10px;min-width:auto}
+.tab-btn{font-size:13px;padding:10px 12px;min-width:auto;flex:1;border-radius:24px}
 .fab{bottom:20px;right:14px;width:46px;height:46px}
 .lp-pos{padding:14px 16px;gap:12px}
 .pos-icon{width:40px;height:40px}
 .pos-name{font-size:16px}
-.pos-at{font-size:8px}
-.pos-sub{font-size:10px}
+.pos-at{font-size:10px}
+.pos-sub{font-size:12px}
 .speed-row{padding:12px 16px;gap:12px}
 .speed-gauge{width:56px;height:28px}
 .speed-num{font-size:20px}
@@ -566,10 +566,10 @@ td{padding:8px}
 .welcome-icon{width:56px;height:56px;margin:0 auto 10px}
 .welcome-title{font-size:18px;gap:6px;line-height:1.3}
 .welcome-word-loader{font-size:16px}
-.welcome-word-card{padding:.3rem .6rem;font-size:12px}
-.welcome-sub{font-size:11px;padding:0 6px;line-height:1.4;margin-top:8px}
+.welcome-word-card{padding:.3rem .6rem;font-size:13px}
+.welcome-sub{font-size:13px;padding:0 6px;line-height:1.4;margin-top:8px}
 .welcome-badges{flex-direction:column;gap:6px;margin-top:10px}
-.welcome-badge{width:100%;justify-content:center;font-size:10px;padding:5px 10px}
+.welcome-badge{width:100%;justify-content:center;font-size:12px;padding:8px 12px}
 .welcome-metrics{grid-template-columns:1fr;gap:6px;margin-top:10px}
 .lp-head{padding:14px 12px;flex-direction:column;gap:6px}
 .lp-top{flex-direction:column;gap:6px}
@@ -582,8 +582,8 @@ td{padding:8px}
 .stats-row{grid-template-columns:1fr;gap:1px}
 .stat-it{padding:10px 8px;border-right:none;border-bottom:1px solid var(--border)}
 .stat-it:last-child{border-bottom:none}
-.sval{font-size:14px}
-.slbl{font-size:7px;margin-top:2px}
+.sval{font-size:16px}
+.slbl{font-size:9px;margin-top:2px}
 .speed-row{padding:10px 12px;gap:10px;flex-direction:column}
 .speed-gauge{width:48px;height:24px}
 .speed-num{font-size:18px}
@@ -591,40 +591,40 @@ td{padding:8px}
 .cd-row{padding:12px 12px;gap:10px;flex-direction:column}
 .cd-val{font-size:22px;letter-spacing:0.5px}
 .cd-right{margin-left:0;margin-top:8px;width:100%;display:flex;justify-content:space-between;align-items:center}
-.cd-sched-val{font-size:12px}
+.cd-sched-val{font-size:13px}
 .lp-pos{padding:12px 12px;flex-direction:column;gap:10px}
 .pos-icon{width:36px;height:36px;font-size:16px}
 .pos-info{display:flex;align-items:center;gap:8px;width:100%}
-.pos-name{font-size:14px}
-.pos-at{font-size:7px}
-.pos-sub{font-size:9px;margin-top:1px}
+.pos-name{font-size:16px}
+.pos-at{font-size:10px}
+.pos-sub{font-size:11px;margin-top:1px}
 .share-row{padding:8px 12px;gap:4px;flex-wrap:wrap}
-.share-btn{font-size:10px;padding:3px 8px}
-.share-lbl{font-size:8px;margin-right:2px}
+.share-btn{font-size:12px;padding:6px 12px}
+.share-lbl{font-size:10px;margin-right:2px}
 .auto-bar{padding:8px 12px;gap:8px;flex-wrap:wrap}
-.live-ind{font-size:10px}
+.live-ind{font-size:12px}
 .ar-prog{max-width:50px;height:2px}
-.ar-lbl{font-size:10px}
-.md3-tabs{gap:6px;padding:10px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tab-btn{padding:6px 10px;font-size:10px;flex:0 1 auto;min-width:fit-content}
+.ar-lbl{font-size:12px}
+.md3-tabs{gap:6px;padding:12px 14px;overflow:hidden}
+.tab-btn{padding:10px 12px;font-size:13px;flex:1;min-width:auto;border-radius:24px}
 .lp-timeline{padding:16px}
-.sec-title{margin-bottom:14px;font-size:9px}
+.sec-title{margin-bottom:14px;font-size:10px;letter-spacing:1px}
 .tl-wrap{padding-left:28px}
 .tl-line{left:5px}
 .stop-dot{left:-23px;width:12px;height:12px}
 .stop.current .stop-dot{width:18px;height:18px;left:-26px}
 .stop-times{flex-direction:column;text-align:left;gap:4px;flex-shrink:1}
 .t-grp{min-width:auto}
-.t-label{font-size:8px}
-.t-val{font-size:11px}
+.t-label{font-size:10px}
+.t-val{font-size:13px}
 .stop-info{flex:1}
-.sname{font-size:13px}
-.scode{font-size:10px}
-.pf-chip{font-size:8px;padding:1px 5px}
+.sname{font-size:15px}
+.scode{font-size:11px}
+.pf-chip{font-size:9px;padding:2px 6px;border-radius:6px}
 .stop-row{gap:8px;flex-direction:column}
 .info-grid{grid-template-columns:1fr;gap:8px}
-.m-label{font-size:8px}
-.mval{font-size:13px;margin-top:2px}
+.m-label{font-size:10px}
+.mval{font-size:15px;margin-top:2px}
 .howto-card{padding:12px 10px;border-radius:14px;gap:8px}
 .howto-title{font-size:12px;margin-bottom:10px;font-weight:600}
 .howto-items{grid-template-columns:1fr;gap:8px}
