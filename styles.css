@@ -516,7 +516,13 @@ tr.row-fut td{opacity:.4}
 .live-loading-title{font-size:18px}
 .live-loading-copy{gap:4px;margin-bottom:14px}
 .live-loading-sub{font-size:12px}
-.tab-btn{font-size:13px;padding:10px 12px;min-width:auto;flex:1;border-radius:24px}
+.md3-tabs{display:flex;gap:0;padding:0;background:var(--surface);border-bottom:1px solid var(--border);overflow:hidden}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none !important;border:none !important;border-radius:0 !important;padding:10px 4px;font-size:11px;font-weight:600;color:var(--text3);box-shadow:none !important;transition:color .2s;position:relative;transform:none !important;min-width:auto}
+.tab-btn:hover{background:none !important;color:var(--text2);transform:none !important}
+.tab-btn.active{color:var(--accent);background:none !important}
+.tab-btn.active::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:3px;background:var(--accent);border-radius:3px 3px 0 0;animation:tabSlide .25s var(--spring)}
+.tab-btn svg{width:18px !important;height:18px !important;stroke-width:2px;margin:0 !important;display:block}
+@keyframes tabSlide{from{opacity:0;transform:scaleX(.5)}to{opacity:1;transform:scaleX(1)}}
 .fab{bottom:20px;right:14px;width:46px;height:46px}
 .lp-pos{padding:14px 16px;gap:12px}
 .pos-icon{width:40px;height:40px}
@@ -605,8 +611,6 @@ td{padding:8px}
 .live-ind{font-size:12px}
 .ar-prog{max-width:50px;height:2px}
 .ar-lbl{font-size:12px}
-.md3-tabs{gap:6px;padding:12px 14px;overflow:hidden}
-.tab-btn{padding:10px 12px;font-size:13px;flex:1;min-width:auto;border-radius:24px}
 .lp-timeline{padding:16px}
 .sec-title{margin-bottom:14px;font-size:10px;letter-spacing:1px}
 .tl-wrap{padding-left:28px}
