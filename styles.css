@@ -478,6 +478,7 @@ tr.row-fut td{opacity:.4}
 @media(max-width:600px){
 .bar-inner{padding:0 10px;gap:6px;height:58px}
 .brand-text{display:none}
+.train-map-section{display:none !important}
 .search-wrap{margin:0 4px}
 .search-field{padding:0 10px;height:40px}
 .search-field input{font-size:13px}

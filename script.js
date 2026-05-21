@@ -908,6 +908,8 @@
 
   function wireMap(lat, lng, trainName, curStn, isLate, delayMins, speedKmh, progress) {
     if (lat == null || lng == null) return;
+    const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    if (isMobile) return;
     const trainMapToggle = $('trainMapToggle');
     const trainMapOuter  = $('trainMapOuter');
     let   leafletMap     = null;
