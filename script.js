@@ -608,7 +608,7 @@
       renderLiveProgress(origin, dest, progress),
       renderLiveStats(isLate, isVeryLate, delayMins, distOrig, distLast, etaStr, speedKmh),
       curStn ? renderLivePosition(curStn, nextStop, etaStr) : '',
-      etaTs  ? renderCountdownRow(nextStop, etaStr) : '',
+      etaTs  ? renderCountdownRow(nextStop, etaStr, etaTs) : '',
       (lat != null && lng != null) ? renderMapSection(lat, lng) : '',
       renderShareRow(),
       renderAutoBar(),
@@ -712,8 +712,12 @@
     </div>`;
   }
 
-  function renderCountdownRow(nextStop, etaStr) {
-    const aD = delaySecs(nextStop?.actualArrivalTime, nextStop?.scheduledArrivalTime);
+  function renderCountdownRow(nextStop, etaStr, etaTs) {
+    const schTs = nextStop?.scheduledArrivalTime || 0;
+    const expTs = etaTs / 1000;
+    const aD = Math.max(0, expTs - schTs);
+    const hasDelay = aD > CFG.DELAY_CHIP_SECS;
+
     return `<div class="cd-row">
       <div><div class="cd-lbl">ARRIVES IN</div><div class="cd-val" id="cdVal">--:--</div></div>
       <div style="flex:1">
@@ -721,9 +725,9 @@
         <div class="cd-code">${he(nextStop?.stationCode || '')} · PF ${he(nextStop?.platformNumber || '—')}</div>
       </div>
       <div class="cd-right">
-        <div class="cd-sched-lbl">${aD > CFG.DELAY_CHIP_SECS ? 'EXPECTED' : 'SCHEDULED'}</div>
-        ${aD > CFG.DELAY_CHIP_SECS ? `<div class="t-sch" style="font-size:11px;margin-bottom:2px">${fmt(nextStop?.scheduledArrivalTime)}</div>` : ''}
-        <div class="cd-sched-val" style="${aD > CFG.DELAY_CHIP_SECS ? 'color:var(--red)' : ''}">${fmt(nextStop?.actualArrivalTime || nextStop?.scheduledArrivalTime)}</div>
+        <div class="cd-sched-lbl">${hasDelay ? 'EXPECTED' : 'SCHEDULED'}</div>
+        ${hasDelay ? `<div class="t-sch" style="font-size:11px;margin-bottom:2px">${fmt(schTs)}</div>` : ''}
+        <div class="cd-sched-val" style="${hasDelay ? 'color:var(--red)' : ''}">${etaStr}</div>
       </div>
     </div>`;
   }
