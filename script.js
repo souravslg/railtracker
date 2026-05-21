@@ -802,6 +802,7 @@
     let h = `<div id="tab-tl" class="tab-content active"><div class="lp-timeline"><div class="sec-title">Journey Timeline</div><div class="tl-wrap"><div class="tl-line"></div>`;
     for (let i = 0; i < route.length; i++) {
       const s = route[i], isCur = i === curIdx, isPast = i < curIdx;
+      const isNonStop = s.isStoppage === false || s.isStoppage === 0 || s.stoppage === false || s.stoppage === 0 || s.haltDuration === 0 || s.haltDuration === "00:00" || s.haltMins === 0 || (s.scheduledArrivalTime === s.scheduledDepartureTime && s.scheduledArrivalTime !== null && i !== 0 && i !== route.length - 1);
       const cls  = isCur ? 'current' : isPast ? 'past' : 'future';
       const aD   = delaySecs(s.actualArrivalTime, s.scheduledArrivalTime);
       const dD   = delaySecs(s.actualDepartureTime, s.scheduledDepartureTime);
@@ -815,7 +816,10 @@
       h += `<div class="stop ${cls}"><div class="stop-dot">${isCur ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="display:block;color:white"><path d="M12 2c-4 0-6 2-6 6v7c0 1.5.5 3 2 3l-2 2v1h12v-1l-2-2c1.5 0 2-1.5 2-3V8c0-4-2-6-6-6zm0 3c1.5 0 2 .5 2 1.5s-.5 1.5-2 1.5-2-.5-2-1.5S10.5 5 12 5zm-3 8c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm6 0c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z" fill="currentColor"/></svg>` : ''}</div>
         <div class="stop-row">
           <div class="stop-info">
-            <div class="sname">${he(s.station_name)}</div>
+            <div class="sname" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px">
+              ${he(s.station_name)}
+              ${isNonStop ? `<span class="non-stop-badge">Non Stop</span>` : ''}
+            </div>
             <div class="scode">${he(s.stationCode)} · #${s.stopIndex || (i + 1)}</div>
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px">
               ${statusBadge}
@@ -839,10 +843,16 @@
         <tbody>`;
     for (let i = 0; i < route.length; i++) {
       const s   = route[i], isCur = i === curIdx, isPast = i < curIdx;
+      const isNonStop = s.isStoppage === false || s.isStoppage === 0 || s.stoppage === false || s.stoppage === 0 || s.haltDuration === 0 || s.haltDuration === "00:00" || s.haltMins === 0 || (s.scheduledArrivalTime === s.scheduledDepartureTime && s.scheduledArrivalTime !== null && i !== 0 && i !== route.length - 1);
       const rc  = isCur ? 'row-cur' : isPast ? 'row-past' : 'row-fut';
       const md  = Math.max(delaySecs(s.actualArrivalTime, s.scheduledArrivalTime), delaySecs(s.actualDepartureTime, s.scheduledDepartureTime));
       h += `<tr class="${rc}"><td>${i + 1}${isCur ? '<span class="cur-arrow"> ◀</span>' : ''}</td>
-        <td class="td-name">${he(s.station_name)}</td><td class="td-code">${he(s.stationCode)}</td>
+        <td class="td-name">
+          <div style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px">
+            ${he(s.station_name)}
+            ${isNonStop ? `<span class="non-stop-badge">Non Stop</span>` : ''}
+          </div>
+        </td><td class="td-code">${he(s.stationCode)}</td>
         <td class="td-pf">${he(s.platformNumber || '—')}</td>
         <td class="td-t">${fmt(s.scheduledArrivalTime)}</td><td class="td-t">${fmt(s.actualArrivalTime)}</td>
         <td class="td-t">${fmt(s.scheduledDepartureTime)}</td><td class="td-t">${fmt(s.actualDepartureTime)}</td>
