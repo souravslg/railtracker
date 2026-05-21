@@ -813,8 +813,8 @@
             </div>
           </div>
           <div class="stop-times">
-            <div class="t-grp"><div class="t-label">Arrival</div><div class="t-val ${aCls}">${fmt(s.actualArrivalTime || s.scheduledArrivalTime)}</div>${aD > CFG.DELAY_CHIP_SECS ? `<div class="d-chip">+${Math.round(aD / 60)}m late</div>` : ''}</div>
-            <div class="t-grp"><div class="t-label">Depart</div><div class="t-val ${dCls}">${fmt(s.actualDepartureTime || s.scheduledDepartureTime)}</div>${dD > CFG.DELAY_CHIP_SECS ? `<div class="d-chip">+${Math.round(dD / 60)}m late</div>` : ''}</div>
+            <div class="t-grp"><div class="t-label">Arrival</div>${aD > CFG.DELAY_CHIP_SECS ? `<div class="t-sch">${fmt(s.scheduledArrivalTime)}</div>` : ''}<div class="t-val ${aCls}">${fmt(s.actualArrivalTime || s.scheduledArrivalTime)}</div>${aD > CFG.DELAY_CHIP_SECS ? `<div class="d-chip">+${Math.round(aD / 60)}m late</div>` : ''}</div>
+            <div class="t-grp"><div class="t-label">Depart</div>${dD > CFG.DELAY_CHIP_SECS ? `<div class="t-sch">${fmt(s.scheduledDepartureTime)}</div>` : ''}<div class="t-val ${dCls}">${fmt(s.actualDepartureTime || s.scheduledDepartureTime)}</div>${dD > CFG.DELAY_CHIP_SECS ? `<div class="d-chip">+${Math.round(dD / 60)}m late</div>` : ''}</div>
           </div>
         </div>
       </div>${i < route.length - 1 ? '<hr class="stop-div">' : ''}`;
