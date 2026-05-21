@@ -281,7 +281,7 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(circle 
 .stop:last-child{padding-bottom:0}
 .stop-dot{position:absolute;left:-25px;top:4px;width:14px;height:14px;border-radius:50%;background:var(--border2);border:2px solid var(--surface);z-index:1;transition:background .2s}
 .stop.past .stop-dot{background:var(--green)}
-.stop.current .stop-dot{width:20px;height:20px;left:-28px;top:1px;background:var(--accent);border:3px solid var(--surface);animation:pulse 2.5s ease-out infinite}
+.stop.current .stop-dot{width:20px;height:20px;left:-28px;top:1px;background:var(--accent);border:3px solid var(--surface);animation:pulse 2.5s ease-out infinite;display:flex;align-items:center;justify-content:center}
 /* past: slightly muted but readable */
 .stop.past{opacity:.75}
 .stop.past .sname{color:var(--text2)}

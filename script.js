@@ -812,7 +812,7 @@
       else if (isPast)           statusBadge = `<span class="stop-status s-done">✓ Done</span>`;
       else if (i === curIdx + 1) statusBadge = `<span class="stop-status s-next">→ Next</span>`;
       else                       statusBadge = `<span class="stop-status s-upcoming">Upcoming</span>`;
-      h += `<div class="stop ${cls}"><div class="stop-dot"></div>
+      h += `<div class="stop ${cls}"><div class="stop-dot">${isCur ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="display:block;color:white"><path d="M12 2c-4 0-6 2-6 6v7c0 1.5.5 3 2 3l-2 2v1h12v-1l-2-2c1.5 0 2-1.5 2-3V8c0-4-2-6-6-6zm0 3c1.5 0 2 .5 2 1.5s-.5 1.5-2 1.5-2-.5-2-1.5S10.5 5 12 5zm-3 8c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm6 0c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z" fill="currentColor"/></svg>` : ''}</div>
         <div class="stop-row">
           <div class="stop-info">
             <div class="sname">${he(s.station_name)}</div>
