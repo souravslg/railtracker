@@ -277,7 +277,7 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(circle 
 .sec-title{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:18px}
 .tl-wrap{position:relative;padding-left:32px}
 .tl-line{position:absolute;left:7px;top:10px;bottom:10px;width:2px;background:linear-gradient(to bottom,var(--accent),var(--border))}
-.stop{position:relative;padding-bottom:20px;content-visibility:auto;contain-intrinsic-size:0 66px}
+.stop{position:relative;padding-bottom:20px}
 .stop:last-child{padding-bottom:0}
 .stop-dot{position:absolute;left:-25px;top:4px;width:14px;height:14px;border-radius:50%;background:var(--border2);border:2px solid var(--surface);z-index:1;transition:background .2s}
 .stop.past .stop-dot{background:var(--green)}
