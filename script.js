@@ -908,8 +908,6 @@
 
   function wireMap(lat, lng, trainName, curStn, isLate, delayMins, speedKmh, progress) {
     if (lat == null || lng == null) return;
-    const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-    if (isMobile) return;
     const trainMapToggle = $('trainMapToggle');
     const trainMapOuter  = $('trainMapOuter');
     let   leafletMap     = null;
@@ -1000,16 +998,13 @@
         this.classList.toggle('open', !isOpen);
         if (!isOpen) buildLeafletMap();
       });
-      // Auto-open when coords available (desktop only to prevent scroll blocking on mobile)
+      // Auto-open when coords available (always open)
       if (lat != null && lng != null) {
         setTimeout(() => {
           if (trainMapOuter && !trainMapOuter.classList.contains('open')) {
-            const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-            if (!isMobile) {
-              trainMapOuter.classList.add('open');
-              trainMapToggle.classList.add('open');
-              buildLeafletMap();
-            }
+            trainMapOuter.classList.add('open');
+            trainMapToggle.classList.add('open');
+            buildLeafletMap();
           }
         }, CFG.MAP_AUTO_OPEN_MS);
       }
