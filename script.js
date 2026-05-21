@@ -186,6 +186,15 @@
   const fmt    = ts => ts
     ? new Date(ts * 1000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
     : '—';
+  const fmtDateTime = ts => {
+    if (!ts) return '—';
+    const d = new Date(ts * 1000);
+    const day = String(d.getDate()).padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[d.getMonth()];
+    const timeStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    return `${day} ${month}, ${timeStr}`;
+  };
   const delaySecs = (actualTs, scheduledTs) => {
     if (actualTs == null || scheduledTs == null) return 0;
     return Math.max(0, actualTs - scheduledTs);
@@ -646,7 +655,7 @@
         </button>
       </div>
       <div class="lp-meta-row">
-        <div class="meta-it"><div class="mlabel">Updated</div><div class="mval">${fmt(data.lastUpdatedTimestamp)}</div></div>
+        <div class="meta-it"><div class="mlabel">Updated</div><div class="mval">${fmtDateTime(data.lastUpdatedTimestamp)}</div></div>
         <div class="meta-it"><div class="mlabel">Covered</div><div class="mval">${distOrig} km</div></div>
         <div class="meta-it"><div class="mlabel">${he(remainingLabel)}</div><div class="mval">${remaining}</div></div>
         <div class="meta-it"><div class="mlabel">Total stops</div><div class="mval">${total}</div></div>
