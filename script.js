@@ -217,16 +217,27 @@
   const normalizeCacheKey = value => String(value == null ? '' : value).trim().toLowerCase();
   const getRouteTrainNo = () => {
     const pathSegments = window.location.pathname.replace(/\/+$/, '').split('/').filter(Boolean);
-    const lastSegment = pathSegments[pathSegments.length - 1] || '';
-    if (/^\d{3,}$/.test(lastSegment)) return lastSegment;
+    let lastSegment = pathSegments[pathSegments.length - 1] || '';
+    try { lastSegment = decodeURIComponent(lastSegment); } catch (e) {}
+    const match = lastSegment.match(/^(\d{3,})(?:-.*)?$/);
+    if (match) return match[1];
     const params = new URLSearchParams(window.location.search);
     const candidate = params.get('trainNo') || params.get('train') || params.get('t');
     return candidate && /^\d{3,}$/.test(candidate) ? candidate : null;
   };
-  const buildTrainUrl = num => `${ROUTE_BASE_PATH}${encodeURIComponent(String(num))}`;
-  function syncRoute(num, replace = false) {
-    const url = buildTrainUrl(num);
-    const state = { view: 'train', num: String(num) };
+  const buildTrainUrl = (num, name) => {
+    if (!name) return `${ROUTE_BASE_PATH}${encodeURIComponent(String(num))}`;
+    const slug = String(name)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    const segment = slug ? `${num}-${slug}` : String(num);
+    return `${ROUTE_BASE_PATH}${encodeURIComponent(segment)}`;
+  };
+  function syncRoute(num, name, replace = false) {
+    const url = buildTrainUrl(num, name);
+    const state = { view: 'train', num: String(num), name: name };
     if (replace) history.replaceState(state, '', url);
     else history.pushState(state, '', url);
   }
@@ -1022,7 +1033,7 @@
   }
 
   function wireShare(trainNo, trainName, curStn, curCode, dest, isLate, delayMins, progress) {
-    const liveUrl = window.location.origin + ROUTE_BASE_PATH + trainNo;
+    const liveUrl = window.location.origin + buildTrainUrl(trainNo, trainName);
     const shareText = `🚆 ${trainNo} — ${trainName}\n📍 At: ${curStn ? curStn.station_name : curCode || '—'}\n⏱ Delay: ${isLate ? '+' + delayMins + ' min' : 'On time'}\n🏁 Destination: ${dest ? dest.station_name : '—'}\n📊 Progress: ${progress}%\n\n🔗 Live Link: ${liveUrl}`;
     const cpBtn = $('copyShareBtn');
     if (cpBtn) cpBtn.addEventListener('click', function () {
@@ -1095,7 +1106,7 @@
   async function doLive(num, name, routeAction = 'push', triggerEl = null) {
     if (!num) return;
     const resolvedName = await resolveTrainName(num, name);
-    syncRoute(num, routeAction === 'replace');
+    syncRoute(num, resolvedName !== num ? resolvedName : null, routeAction === 'replace');
     DOM.searchResults.innerHTML = '';
     clearInterval(countdownInterval); stopAR();
     curNum = num; curName = resolvedName;
@@ -1113,6 +1124,7 @@
       if (apiName && apiName !== num) {
         curName = apiName;
         trainNameCache.set(String(num), apiName);
+        syncRoute(num, apiName, true);
       }
       liveLoadingReady = true;
       // Render immediately if animation is already done, otherwise tick loop will handle it
@@ -1535,7 +1547,7 @@
   DOM.refreshBtn?.addEventListener('mouseenter', () => { if (curNum) prefetchTrain(curNum, curName); }, { passive: true });
   window.addEventListener('popstate', () => {
     const routeTrainNo = getRouteTrainNo();
-    if (routeTrainNo) doLive(routeTrainNo, routeTrainNo, 'replace');
+    if (routeTrainNo) doLive(routeTrainNo, null, 'replace');
     else goHome(false);
   });
 

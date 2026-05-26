@@ -10,8 +10,9 @@
       var parts = path.split('/').filter(Boolean);
       var last = parts[parts.length - 1] || '';
       var base = window.location.pathname.replace(/[^/]*$/, '');
-      if (/^\d{3,}$/.test(last)) {
-        window.location.replace(base + '?trainNo=' + encodeURIComponent(last));
+      var match = last.match(/^(\d{3,})(?:-.*)?$/);
+      if (match) {
+        window.location.replace(base + '?trainNo=' + encodeURIComponent(match[1]));
       } else {
         window.location.replace(base);
       }
