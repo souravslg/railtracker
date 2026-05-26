@@ -604,6 +604,20 @@
     const remaining  = curIdx >= 0 ? route.length - 1 - curIdx : route.length;
     const remainingLabel = curIdx >= 0 ? 'Stops left' : 'Total stops';
 
+    // ── Check if today's run has not started yet ──
+    const originStn = route[0];
+    let notStartedYet = false;
+    let todayStartTs = 0;
+    if (originStn && originStn.scheduledDepartureTime) {
+      const d = new Date(originStn.scheduledDepartureTime * 1000);
+      const today = new Date();
+      today.setHours(d.getHours(), d.getMinutes(), d.getSeconds(), 0);
+      todayStartTs = Math.floor(today.getTime() / 1000);
+      if (Date.now() / 1000 < todayStartTs) {
+        notStartedYet = true;
+      }
+    }
+
     let etaStr = '—'; let etaTs = 0;
     if (nextStop) {
       const liveArrivalSecs = nextStop.actualArrivalTime || (nextStop.scheduledArrivalTime ? nextStop.scheduledArrivalTime + (data.delayInSecs || 0) : null);
@@ -619,6 +633,13 @@
     const h = [
       `<div class="live-panel">`,
       renderLiveHeader(trainNo, trainName, data, origin, dest, isLate, isVeryLate, delayMins, distOrig, remaining, route.length, remainingLabel, favFlag),
+      notStartedYet ? `<div class="not-started-banner">
+        <div class="ns-icon-bg">⚠️</div>
+        <div class="ns-content">
+          <h4>Train has still not started today</h4>
+          <p>Today's scheduled run starts at <strong>${fmt(todayStartTs)}</strong>. Displayed tracking may reflect yesterday's completed tour.</p>
+        </div>
+      </div>` : '',
       renderLiveProgress(origin, dest, progress),
       renderLiveStats(isLate, isVeryLate, delayMins, distOrig, distLast, etaStr, speedKmh),
       curStn ? renderLivePosition(curStn, nextStop, etaStr) : '',

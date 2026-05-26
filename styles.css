@@ -439,6 +439,12 @@ tr.row-fut td{opacity:.4}
 .modal-box p{font-size:13px;color:var(--text2);margin-bottom:10px}
 .modal-close{position:absolute;right:14px;top:10px;font-size:20px;cursor:pointer;color:var(--text3);width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:none;border:none;transition:all .2s}
 .modal-close:hover{background:var(--bg3);color:var(--text)}
+/* NOT STARTED BANNER */
+.not-started-banner{display:flex;align-items:center;gap:14px;padding:14px 22px;background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(245,158,11,0.03));border-bottom:1.5px solid rgba(245,158,11,0.22);color:var(--text);position:relative;z-index:2;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.ns-icon-bg{width:38px;height:38px;border-radius:12px;background:rgba(245,158,11,0.16);display:grid;place-items:center;font-size:18px;flex-shrink:0;box-shadow:0 4px 10px rgba(245,158,11,0.18)}
+.ns-content{flex:1;min-width:0;text-align:left}
+.ns-content h4{font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:2px}
+.ns-content p{font-size:11px;color:var(--text2);line-height:1.4}
 /* SEARCH SUGGEST */
 .suggest-list{background:var(--surface);border:1px solid var(--border2);border-radius:22px;box-shadow:var(--shadow2);max-height:280px;overflow-y:auto;position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:300;animation:riseIn .18s var(--spring) both}
 .suggest-item{padding:11px 16px;cursor:pointer;font-size:13px;transition:background .15s;display:flex;align-items:center;gap:10px;-webkit-tap-highlight-color:transparent}
