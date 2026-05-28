@@ -998,7 +998,7 @@
           <div class="map-popup-row"><span class="map-popup-lbl">Speed</span><span class="map-popup-val">${speedKmh != null ? speedKmh + ' km/h' : '—'}</span></div>
           <div class="map-popup-row"><span class="map-popup-lbl">Progress</span><span class="map-popup-val">${progress}%</span></div>
         </div>`;
-        L.marker([lat, lng], { icon: trainIcon, zIndexOffset: 1000 }).addTo(leafletMap).bindPopup(popupHtml, { closeOnClick: false, autoClose: false }).openPopup();
+        L.marker([lat, lng], { icon: trainIcon, zIndexOffset: 1000 }).addTo(leafletMap);
         // Invalidate after a brief delay to handle hidden containers
         setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, CFG.MAP_INVALIDATE_MS);
       } catch (e) {
