@@ -1190,33 +1190,27 @@
     curNum = num; curName = resolvedName;
     DOM.refreshBtn.style.display = 'flex';
     clearSuggest(); si.value = '';
-    const token = startLiveLoading(num, resolvedName, triggerEl);
+    DOM.liveView.innerHTML = loader("Loading live status...");
     try {
       const now = new Date();
       const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const d = await fetchData(`/live-status?trainNo=${encodeURIComponent(num)}&startDate=${today}`);
-      if (token !== liveLoadingToken) return;
-      liveLoadingData = d.data;
-      // Try to resolve the official train name from API payload if we only have the number
+      
       const apiName = d.data?.trainName || d.data?.train_name || d.data?.name;
       if (apiName && apiName !== num) {
         curName = apiName;
         trainNameCache.set(String(num), apiName);
         syncRoute(num, apiName, true);
       }
-      liveLoadingReady = true;
-      // Render immediately if animation is already done, otherwise tick loop will handle it
-      if (liveLoadingPct >= 100) {
-        lastRefTs = new Date();
-        finishLiveLoading(token);
-      }
+      
+      lastRefTs = new Date();
+      renderLive(d.data, curNum, curName);
+      updateLastRef();
+      startAR();
     } catch (err) {
-      if (token !== liveLoadingToken) return;
-      clearLiveLoading();
       const msg  = friendlyError(err);
       const hint = errorHint(err);
       DOM.liveView.innerHTML = renderError(`Failed to load: ${msg}`, hint);
-      // Offer a retry button on network/server errors
       if (err instanceof NetworkError || (err instanceof ApiError && err.status >= 500)) {
         DOM.liveView.innerHTML += `<div style="padding:0 20px 16px"><button class="track-btn" id="retryLiveBtn" style="margin-top:8px">↺ Retry</button></div>`;
         $('retryLiveBtn')?.addEventListener('click', () => doLive(num, name));
