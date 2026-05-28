@@ -1735,6 +1735,35 @@
         }
       },
       {
+        url: 'https://ipinfo.io/json',
+        parse: (d) => {
+          const coords = d.loc ? d.loc.split(',') : ['', ''];
+          return {
+            ip: d.ip,
+            city: d.city || '',
+            region: d.region || '',
+            country: d.country || '',
+            lat: coords[0] ? Number(coords[0]).toFixed(4) : '—',
+            lon: coords[1] ? Number(coords[1]).toFixed(4) : '—',
+            isp: d.org || '—'
+          };
+        }
+      },
+      {
+        url: 'https://api.db-ip.com/v2/free/self',
+        parse: (d) => {
+          return {
+            ip: d.ipAddress,
+            city: d.city || '',
+            region: d.stateProv || '',
+            country: d.countryName || '',
+            lat: '—',
+            lon: '—',
+            isp: '—'
+          };
+        }
+      },
+      {
         url: 'https://ipwho.is/',
         parse: (d) => {
           if (d.success === false) throw new Error('ipwhois failed');
@@ -1775,9 +1804,9 @@
         if (!data.ip) continue;
 
         const locStr = [data.city, data.region, data.country].filter(Boolean).join(', ') || '—';
-        const locText = locStr !== '—' ? locStr : (data.ip || '—');
+        const locText = locStr !== '—' ? locStr : '—';
         
-        if (DOM.netLocTxt) DOM.netLocTxt.textContent = locText;
+        if (DOM.netLocTxt) DOM.netLocTxt.textContent = locStr !== '—' ? locStr : 'No location';
         const pi = $('popIp');     if (pi) pi.textContent = data.ip;
         const pisp = $('popIsp');  if (pisp) pisp.textContent = data.isp.length > CFG.ISP_MAX_LEN ? data.isp.slice(0, CFG.ISP_MAX_LEN) + '…' : data.isp;
         const pl = $('popLoc');    if (pl) pl.textContent = locText;
@@ -1795,7 +1824,7 @@
         const r = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
         if (r.ok) {
           const d = await r.json();
-          if (DOM.netLocTxt) DOM.netLocTxt.textContent = d.ip || 'No location';
+          if (DOM.netLocTxt) DOM.netLocTxt.textContent = 'No location';
           const pi = $('popIp'); if (pi) pi.textContent = d.ip || 'Unavailable';
           const pl = $('popLoc'); if (pl) pl.textContent = '—';
           const pisp = $('popIsp'); if (pisp) pisp.textContent = '—';
