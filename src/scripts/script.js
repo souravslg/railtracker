@@ -747,6 +747,13 @@
     wireMap(lat, lng, trainName, curStn, isLate, delayMins, speedKmh, progress);
     wireShare(trainNo, trainName, curStn, curCode, dest, isLate, delayMins, progress);
     wireTabs(lv);
+
+    // ── Dynamic SEO ──
+    const seoTitle = `Live Running Status of ${trainName || 'Train'} (${trainNo}) - TrainTracker.in`;
+    const seoDesc = `Check live running status of ${trainName || 'Train'} (${trainNo}) which runs from ${originStn?.station_name || originStn?.stationCode || 'Source'} to ${dest?.station_name || dest?.stationCode || 'Destination'}. Spot your train in real-time on TrainTracker.in`;
+    document.title = seoTitle;
+    const metaDescEl = document.querySelector('meta[name="description"]');
+    if (metaDescEl) metaDescEl.setAttribute('content', seoDesc);
   }
 
   /* ── Sub-renderers ── */
@@ -1635,6 +1642,10 @@
     si.value = ''; clearSuggest(); showWelcome();
     if (syncHistory) clearRoute(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    document.title = "Train Tracker — Live Train Tracker";
+    const metaDescEl = document.querySelector('meta[name="description"]');
+    if (metaDescEl) metaDescEl.setAttribute('content', "Check live train running status, real-time route, and arrival information on TrainTracker.in");
   }
 
   $('brandBtn')?.addEventListener('click', () => goHome(true));
