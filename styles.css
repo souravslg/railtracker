@@ -293,14 +293,24 @@ body::before,body::after{content:none !important;display:none !important}
 .stop.past .stop-dot{background:radial-gradient(circle at 35% 35%, #fff 0%, var(--green) 55%, color-mix(in srgb,var(--green) 70%,#000 30%) 100%);box-shadow:0 0 10px rgba(16,185,129,0.4), 0 3px 6px rgba(0,0,0,0.1), inset 0 -1.5px 2px rgba(0,0,0,0.25)}
 .stop.current .stop-dot{width:22px;height:22px;left:-29.5px;top:0.5px;background:radial-gradient(circle at 35% 35%, #fff 0%, var(--accent) 55%, var(--accent2) 100%);box-shadow:0 0 20px var(--accent), 0 4px 10px rgba(var(--accent-rgb),0.4), inset 0 -2px 3px rgba(0,0,0,0.3);border:none;animation:pulse 2.5s ease-out infinite;display:flex;align-items:center;justify-content:center}
 /* past: slightly muted but readable */
-.stop.past{opacity:.75}
+.stop.past{opacity:1}
 .stop.past .sname{color:var(--text2)}
+.stop.past .scode{color:var(--text3)}
+.stop.past .t-val{color:var(--text2)}
+.stop.past .t-sch{color:var(--text3)}
 /* current: full brightness, accent color */
 .stop.current{opacity:1}
 .stop.current .sname{color:var(--accent);font-weight:600}
-/* future: clearly dimmed */
-.stop.future{opacity:.35}
+/* future: clearly dimmed but sharp */
+.stop.future{opacity:1}
 .stop.future .sname{color:var(--text3)}
+.stop.future .scode{color:color-mix(in srgb,var(--text3) 70%,transparent)}
+.stop.future .t-label{color:color-mix(in srgb,var(--text3) 70%,transparent)}
+.stop.future .t-val{color:var(--text3)}
+.stop.future .t-sch{color:var(--text3)}
+.stop.future .stop-dot{opacity:0.4}
+.stop.future .stop-status{opacity:0.55}
+.stop.future .pf-chip{opacity:0.55}
 /* status badge on each stop */
 .stop-status{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:600;padding:1px 6px;border-radius:99px;margin-top:4px;letter-spacing:.3px;font-family:var(--mono)}
 .stop-status.s-done{background:var(--green-bg);color:var(--green);border:1px solid rgba(16,185,129,.2)}
@@ -333,7 +343,7 @@ tr:last-child td{border-bottom:none}
 tr.row-past td{color:var(--text2)}
 tr.row-cur{background:rgba(91,63,255,.05)}
 tr.row-cur td{font-weight:500}
-tr.row-fut td{opacity:.4}
+tr.row-fut td{color:var(--text3)}
 .td-name{font-weight:500}
 .td-code{font-family:var(--mono);font-size:10px;color:var(--text3)}
 .td-t{font-family:var(--mono);white-space:nowrap}
