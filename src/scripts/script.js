@@ -1643,9 +1643,9 @@
     if (syncHistory) clearRoute(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    document.title = "Train Tracker — Live Train Tracker";
+    document.title = "Live Train Running Status & Tracker | TrainTracker.in";
     const metaDescEl = document.querySelector('meta[name="description"]');
-    if (metaDescEl) metaDescEl.setAttribute('content', "Check live train running status, real-time route, and arrival information on TrainTracker.in");
+    if (metaDescEl) metaDescEl.setAttribute('content', "Check exact live train running status, real-time location, delays, and platform numbers instantly. Enter your train name or number to start tracking.");
   }
 
   $('brandBtn')?.addEventListener('click', () => goHome(true));
