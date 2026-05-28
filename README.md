@@ -45,7 +45,7 @@ Data may not always be fully real-time
 Not affiliated with Indian Railways
 🐞 Report Issues
 
-👉 (https://github.com/bhargavtodimelaa/train)
+
 
 📄 Disclaimer
 
