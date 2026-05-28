@@ -34,7 +34,7 @@ const { title = "Live Train Running Status & Tracker | TrainTracker.in" } = Astr
     (function () {
       try {
         const t = localStorage.getItem('tt');
-        if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        if (t === 'dark' || !t) document.documentElement.setAttribute('data-theme', 'dark');
         else if (t === 'light') document.documentElement.removeAttribute('data-theme');
       } catch (e) { /* ignore */ }
     })();
