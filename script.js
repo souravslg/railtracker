@@ -166,7 +166,25 @@
 
   async function resolveTrainName(num, fallbackName = '') {
     const key = String(num);
-    if (trainNameCache.has(key)) return trainNameCache.get(key);
+    if (trainNameCache.has(key)) {
+      const cached = trainNameCache.get(key);
+      if (cached && cached !== key) return cached;
+    }
+    if (fallbackName && fallbackName !== key) {
+      trainNameCache.set(key, fallbackName);
+      return fallbackName;
+    }
+    try {
+      const d = await fetchData('/search?q=' + encodeURIComponent(num));
+      const trains = d?.data ?? [];
+      const exactMatch = trains.find(t => String(t.number) === key);
+      if (exactMatch && exactMatch.name) {
+        trainNameCache.set(key, exactMatch.name);
+        return exactMatch.name;
+      }
+    } catch (e) {
+      // ignore
+    }
     const resolved = fallbackName || key;
     trainNameCache.set(key, resolved);
     return resolved;
@@ -221,9 +239,44 @@
     try { lastSegment = decodeURIComponent(lastSegment); } catch (e) {}
     const match = lastSegment.match(/^(\d{3,})(?:-.*)?$/);
     if (match) return match[1];
+    
     const params = new URLSearchParams(window.location.search);
-    const candidate = params.get('trainNo') || params.get('train') || params.get('t');
-    return candidate && /^\d{3,}$/.test(candidate) ? candidate : null;
+    let candidate = params.get('trainNo') || params.get('train') || params.get('t');
+    if (candidate) {
+      try { candidate = decodeURIComponent(candidate); } catch (e) {}
+      const m = candidate.match(/^(\d{3,})(?:-.*)?$/);
+      if (m) return m[1];
+    }
+    return null;
+  };
+
+  const getRouteTrainName = () => {
+    const pathSegments = window.location.pathname.replace(/\/+$/, '').split('/').filter(Boolean);
+    let lastSegment = pathSegments[pathSegments.length - 1] || '';
+    try { lastSegment = decodeURIComponent(lastSegment); } catch (e) {}
+    const match = lastSegment.match(/^(\d{3,})-(.+)$/);
+    if (match && match[2]) {
+      return match[2]
+        .split('-')
+        .filter(Boolean)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+    
+    const params = new URLSearchParams(window.location.search);
+    let candidate = params.get('trainNo') || params.get('train') || params.get('t');
+    if (candidate) {
+      try { candidate = decodeURIComponent(candidate); } catch (e) {}
+      const m = candidate.match(/^(\d{3,})-(.+)$/);
+      if (m && m[2]) {
+        return m[2]
+          .split('-')
+          .filter(Boolean)
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      }
+    }
+    return null;
   };
   const buildTrainUrl = (num, name) => {
     if (!name) return `${ROUTE_BASE_PATH}${encodeURIComponent(String(num))}`;
@@ -1568,7 +1621,8 @@
   DOM.refreshBtn?.addEventListener('mouseenter', () => { if (curNum) prefetchTrain(curNum, curName); }, { passive: true });
   window.addEventListener('popstate', () => {
     const routeTrainNo = getRouteTrainNo();
-    if (routeTrainNo) doLive(routeTrainNo, null, 'replace');
+    const routeTrainName = getRouteTrainName();
+    if (routeTrainNo) doLive(routeTrainNo, routeTrainName, 'replace');
     else goHome(false);
   });
 
@@ -1722,7 +1776,8 @@
      INIT
   ══════════════════════════════════════════════ */
   const initialTrainNo = getRouteTrainNo();
-  if (initialTrainNo) doLive(initialTrainNo, null, 'replace');
+  const initialTrainName = getRouteTrainName();
+  if (initialTrainNo) doLive(initialTrainNo, initialTrainName, 'replace');
   else showWelcome();
 
   scheduleIdle(() => {
