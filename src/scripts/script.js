@@ -686,6 +686,9 @@
     const speedKmh = data.currentPosition?.speedKmph != null ? Math.round(data.currentPosition.speedKmph) : null;
     const favFlag  = isFav(trainNo);
 
+    const startingStation = originStn?.station_name || originStn?.stationName || 'Origin';
+    const yesterdayStartTs = todayStartTs - 86400;
+
     // ── Assemble HTML from sub-renderers ──
     const h = [
       `<div class="live-panel">`,
@@ -695,6 +698,9 @@
         <div class="ns-content">
           <h4>Train has still not started today</h4>
           <p>Today's scheduled run starts at <strong>${fmt(todayStartTs)}</strong>. Displayed tracking may reflect yesterday's completed tour.</p>
+          <p style="margin-top: 5px; font-size: 11px; opacity: 0.92; font-weight: 500;">
+            👉 Yesterday's active tour started on <strong>${fmtDateTime(yesterdayStartTs)}</strong> from <strong>${startingStation}</strong>.
+          </p>
         </div>
       </div>` : '',
       renderLiveProgress(origin, dest, progress),
