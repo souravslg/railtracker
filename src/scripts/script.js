@@ -256,7 +256,11 @@
     try { lastSegment = decodeURIComponent(lastSegment); } catch (e) {}
     const match = lastSegment.match(/^(\d{3,})-(.+)$/);
     if (match && match[2]) {
-      return match[2]
+      let slug = match[2];
+      if (slug.endsWith('-running-status-live')) {
+        slug = slug.slice(0, -20);
+      }
+      return slug
         .split('-')
         .filter(Boolean)
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -269,7 +273,11 @@
       try { candidate = decodeURIComponent(candidate); } catch (e) {}
       const m = candidate.match(/^(\d{3,})-(.+)$/);
       if (m && m[2]) {
-        return m[2]
+        let slug = m[2];
+        if (slug.endsWith('-running-status-live')) {
+          slug = slug.slice(0, -20);
+        }
+        return slug
           .split('-')
           .filter(Boolean)
           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -279,13 +287,13 @@
     return null;
   };
   const buildTrainUrl = (num, name) => {
-    if (!name) return `${ROUTE_BASE_PATH}${encodeURIComponent(String(num))}`;
+    if (!name) return `${ROUTE_BASE_PATH}${encodeURIComponent(String(num))}-running-status-live`;
     const slug = String(name)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '');
-    const segment = slug ? `${num}-${slug}` : String(num);
+    const segment = slug ? `${num}-${slug}-running-status-live` : `${num}-running-status-live`;
     return `${ROUTE_BASE_PATH}${encodeURIComponent(segment)}`;
   };
   function syncRoute(num, name, replace = false) {
