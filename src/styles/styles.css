@@ -70,8 +70,13 @@ body::before,body::after{content:none !important;display:none !important}
 .brand-text{font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:-.4px}
 .brand-text em{color:var(--accent);font-style:normal}
 .search-wrap{flex:1;max-width:520px;margin:0 10px;position:relative}
-.search-field{display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--border2);border-radius:999px;padding:0 16px;height:46px;transition:all .3s var(--spring);box-shadow:inset 0 3px 8px rgba(0,0,0,0.1), inset 0 -1px 0 rgba(255,255,255,0.06), 0 4px 10px rgba(0,0,0,0.02)}
-.search-field:focus-within{border-color:rgba(var(--accent-rgb),.55);background:var(--surface);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.15), 0 16px 36px rgba(var(--accent-rgb),.14), inset 0 2px 4px rgba(0,0,0,0.05);transform:translateY(-1px)}
+@keyframes pulseSearch {
+  0% { box-shadow: inset 0 3px 8px rgba(0,0,0,0.1), inset 0 -1px 0 rgba(255,255,255,0.06), 0 4px 10px rgba(0,0,0,0.02), 0 0 0 0 rgba(var(--accent-rgb), 0.3); border-color: var(--border2); }
+  50% { box-shadow: inset 0 3px 8px rgba(0,0,0,0.1), inset 0 -1px 0 rgba(255,255,255,0.06), 0 4px 10px rgba(0,0,0,0.02), 0 0 0 8px rgba(var(--accent-rgb), 0); border-color: rgba(var(--accent-rgb), 0.45); }
+  100% { box-shadow: inset 0 3px 8px rgba(0,0,0,0.1), inset 0 -1px 0 rgba(255,255,255,0.06), 0 4px 10px rgba(0,0,0,0.02), 0 0 0 0 rgba(var(--accent-rgb), 0); border-color: var(--border2); }
+}
+.search-field{display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--border2);border-radius:999px;padding:0 16px;height:46px;transition:all .3s var(--spring);box-shadow:inset 0 3px 8px rgba(0,0,0,0.1), inset 0 -1px 0 rgba(255,255,255,0.06), 0 4px 10px rgba(0,0,0,0.02);animation:pulseSearch 2.5s infinite ease-out}
+.search-field:focus-within{animation:none;border-color:rgba(var(--accent-rgb),.55);background:var(--surface);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.15), 0 16px 36px rgba(var(--accent-rgb),.14), inset 0 2px 4px rgba(0,0,0,0.05);transform:translateY(-1px)}
 .search-field .ms{color:var(--text);opacity:0.85;flex-shrink:0;font-size:21px}
 .search-field input{flex:1;background:none;border:none;outline:none;font-family:var(--font);font-size:15px;color:var(--text);min-width:0}
 .search-field input::placeholder{color:var(--text);opacity:0.85}
