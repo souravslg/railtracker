@@ -449,31 +449,27 @@
     stopAR();
     curNum = null; curName = null;
     DOM.refreshBtn.style.display = 'none';
+    
     const cached = getPersistedSearchCache(q);
     if (cached?.data?.length) {
-      clearSearchLoading();
       searchRes = cached.data;
       renderSearch(cached.data, q, true);
       return;
     }
-    const loadStartedAt = Date.now();
-    startSearchLoading(q);
+    
+    sr.innerHTML = loader("Searching...");
     try {
-      const d     = await fetchData('/search?q=' + encodeURIComponent(q));
+      const d = await fetchData('/search?q=' + encodeURIComponent(q));
       const trains = d?.data ?? [];
       searchRes = trains;
       saveSearchCache(q, trains);
-      await keepSearchLoadingVisible(loadStartedAt);
-      clearSearchLoading();
       renderSearch(trains, q);
     } catch (err) {
-      await keepSearchLoadingVisible(loadStartedAt);
-      clearSearchLoading();
-      const cached = getPersistedSearchCache(q);
-      if (cached?.data?.length) {
-        searchRes = cached.data;
+      const cachedBackup = getPersistedSearchCache(q);
+      if (cachedBackup?.data?.length) {
+        searchRes = cachedBackup.data;
         toast('Showing cached results', 'info');
-        renderSearch(cached.data, q, true);
+        renderSearch(cachedBackup.data, q, true);
         return;
       }
       const msg  = friendlyError(err);
