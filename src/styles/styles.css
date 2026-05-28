@@ -72,9 +72,9 @@ body::before,body::after{content:none !important;display:none !important}
 .search-wrap{flex:1;max-width:520px;margin:0 10px;position:relative}
 .search-field{display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--border2);border-radius:999px;padding:0 16px;height:46px;transition:all .3s var(--spring);box-shadow:inset 0 3px 8px rgba(0,0,0,0.1), inset 0 -1px 0 rgba(255,255,255,0.06), 0 4px 10px rgba(0,0,0,0.02)}
 .search-field:focus-within{border-color:rgba(var(--accent-rgb),.55);background:var(--surface);box-shadow:0 0 0 4px rgba(var(--accent-rgb),.15), 0 16px 36px rgba(var(--accent-rgb),.14), inset 0 2px 4px rgba(0,0,0,0.05);transform:translateY(-1px)}
-.search-field .ms{color:var(--text3);flex-shrink:0;font-size:21px}
+.search-field .ms{color:var(--text);opacity:0.85;flex-shrink:0;font-size:21px}
 .search-field input{flex:1;background:none;border:none;outline:none;font-family:var(--font);font-size:15px;color:var(--text);min-width:0}
-.search-field input::placeholder{color:var(--text3)}
+.search-field input::placeholder{color:var(--text);opacity:0.85}
 .bar-right{margin-left:auto;display:flex;align-items:center;gap:6px}
 .ist-badge{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:linear-gradient(180deg,var(--bg3),var(--surface));border:1.5px solid var(--border2);font-family:var(--mono);font-size:12px;font-weight:500;white-space:nowrap;flex-shrink:0;box-shadow:0 6px 16px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.8)}
 .ist-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:bl 1.4s ease-in-out infinite}
