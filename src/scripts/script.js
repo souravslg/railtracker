@@ -689,17 +689,34 @@
     const startingStation = originStn?.station_name || originStn?.stationName || 'Origin';
     const yesterdayStartTs = todayStartTs - 86400;
 
+    const isReached = curIdx === route.length - 1 || progress === 100;
+    const bannerTitle = isReached ? "Train reached at destination" : "Train is running";
+    const bannerIcon = isReached ? "✅" : "🚆";
+    const bannerBg = isReached 
+      ? "linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.03))"
+      : "linear-gradient(135deg, rgba(91, 63, 255, 0.12), rgba(91, 63, 255, 0.03))";
+    const bannerBorder = isReached ? "rgba(16, 185, 129, 0.22)" : "rgba(91, 63, 255, 0.22)";
+    const titleColor = isReached ? "var(--green)" : "var(--accent)";
+    const iconBg = isReached ? "rgba(16, 185, 129, 0.16)" : "rgba(91, 63, 255, 0.16)";
+    const iconShadow = isReached ? "0 4px 10px rgba(16, 185, 129, 0.18)" : "0 4px 10px rgba(91, 63, 255, 0.18)";
+    const destStation = dest?.station_name || dest?.stationName || 'Destination';
+    const bannerDescription = isReached
+      ? `Yesterday's tour completed. It started on <strong>${fmtDateTime(yesterdayStartTs)}</strong> from <strong>${startingStation}</strong> and has successfully reached <strong>${destStation}</strong>.`
+      : `Yesterday's active tour started on <strong>${fmtDateTime(yesterdayStartTs)}</strong> from <strong>${startingStation}</strong> and is currently running towards <strong>${destStation}</strong>.`;
+
     // ── Assemble HTML from sub-renderers ──
     const h = [
       `<div class="live-panel">`,
       renderLiveHeader(trainNo, trainName, data, origin, dest, isLate, isVeryLate, delayMins, distOrig, remaining, route.length, remainingLabel, favFlag),
-      notStartedYet ? `<div class="not-started-banner">
-        <div class="ns-icon-bg">⚠️</div>
+      notStartedYet ? `<div class="not-started-banner" style="background: ${bannerBg}; border-bottom: 1.5px solid ${bannerBorder};">
+        <div class="ns-icon-bg" style="background: ${iconBg}; box-shadow: ${iconShadow}; font-size: 16px;">${bannerIcon}</div>
         <div class="ns-content">
-          <h4>Train has still not started today</h4>
-          <p>Today's scheduled run starts at <strong>${fmt(todayStartTs)}</strong>. Displayed tracking may reflect yesterday's completed tour.</p>
-          <p style="margin-top: 5px; font-size: 11px; opacity: 0.92; font-weight: 500;">
-            👉 Yesterday's active tour started on <strong>${fmtDateTime(yesterdayStartTs)}</strong> from <strong>${startingStation}</strong>.
+          <h4 style="color: ${titleColor}; margin-bottom: 3px;">${bannerTitle}</h4>
+          <p style="font-size: 11px; opacity: 0.95; line-height: 1.4;">
+            ${bannerDescription}
+          </p>
+          <p style="margin-top: 5px; font-size: 10px; opacity: 0.8; font-weight: 500;">
+            Today's scheduled run starts at <strong>${fmt(todayStartTs)}</strong>.
           </p>
         </div>
       </div>` : '',
