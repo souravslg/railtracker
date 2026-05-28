@@ -1718,25 +1718,93 @@
   }
 
   async function fetchIpInfo() {
-    try {
-      const r = await fetch('https://ipapi.co/json/', { cache: 'no-store' });
-      if (!r.ok) throw new Error('ipapi ' + r.status);
-      const d = await r.json();
-      if (d.error) throw new Error(d.reason);
-      const city    = d.city    || '';
-      const region  = d.region  || '';
-      const country = d.country_name || '';
-      const lat     = d.latitude  ? Number(d.latitude).toFixed(4)  : '—';
-      const lon     = d.longitude ? Number(d.longitude).toFixed(4) : '—';
-      const isp     = d.org || d.asn || '—';
-      const locStr  = [city, region, country].filter(Boolean).join(', ') || '—';
-      const locText  = locStr !== '—' ? locStr : (d.ip || '—');
-      if (DOM.netLocTxt) DOM.netLocTxt.textContent = locText;
-      const pi = $('popIp');     if (pi) pi.textContent = d.ip || '—';
-      const pisp = $('popIsp');  if (pisp) pisp.textContent = isp.length > CFG.ISP_MAX_LEN ? isp.slice(0, CFG.ISP_MAX_LEN) + '…' : isp;
-      const pl = $('popLoc');    if (pl) pl.textContent = locText;
-      const pc = $('popCoords'); if (pc) pc.textContent = `${lat}°, ${lon}°`;
-    } catch (e) {
+    const apis = [
+      {
+        url: 'https://ipapi.co/json/',
+        parse: (d) => {
+          if (d.error) throw new Error(d.reason);
+          return {
+            ip: d.ip,
+            city: d.city || '',
+            region: d.region || '',
+            country: d.country_name || '',
+            lat: d.latitude ? Number(d.latitude).toFixed(4) : '—',
+            lon: d.longitude ? Number(d.longitude).toFixed(4) : '—',
+            isp: d.org || d.asn || '—'
+          };
+        }
+      },
+      {
+        url: 'https://ipwho.is/',
+        parse: (d) => {
+          if (d.success === false) throw new Error('ipwhois failed');
+          return {
+            ip: d.ip,
+            city: d.city || '',
+            region: d.region || '',
+            country: d.country || '',
+            lat: d.latitude ? Number(d.latitude).toFixed(4) : '—',
+            lon: d.longitude ? Number(d.longitude).toFixed(4) : '—',
+            isp: d.connection?.isp || d.connection?.asn || '—'
+          };
+        }
+      },
+      {
+        url: 'https://freeipapi.com/api/json',
+        parse: (d) => {
+          return {
+            ip: d.ipAddress,
+            city: d.cityName || '',
+            region: d.regionName || '',
+            country: d.countryName || '',
+            lat: d.latitude ? Number(d.latitude).toFixed(4) : '—',
+            lon: d.longitude ? Number(d.longitude).toFixed(4) : '—',
+            isp: '—'
+          };
+        }
+      }
+    ];
+
+    let success = false;
+    for (const api of apis) {
+      try {
+        const r = await fetch(api.url, { cache: 'no-store' });
+        if (!r.ok) continue;
+        const raw = await r.json();
+        const data = api.parse(raw);
+        if (!data.ip) continue;
+
+        const locStr = [data.city, data.region, data.country].filter(Boolean).join(', ') || '—';
+        const locText = locStr !== '—' ? locStr : (data.ip || '—');
+        
+        if (DOM.netLocTxt) DOM.netLocTxt.textContent = locText;
+        const pi = $('popIp');     if (pi) pi.textContent = data.ip;
+        const pisp = $('popIsp');  if (pisp) pisp.textContent = data.isp.length > CFG.ISP_MAX_LEN ? data.isp.slice(0, CFG.ISP_MAX_LEN) + '…' : data.isp;
+        const pl = $('popLoc');    if (pl) pl.textContent = locText;
+        const pc = $('popCoords'); if (pc) pc.textContent = data.lat !== '—' && data.lon !== '—' ? `${data.lat}°, ${data.lon}°` : '—';
+        
+        success = true;
+        break;
+      } catch (err) {
+        console.warn(`GeoIP API ${api.url} failed:`, err);
+      }
+    }
+
+    if (!success) {
+      try {
+        const r = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+        if (r.ok) {
+          const d = await r.json();
+          if (DOM.netLocTxt) DOM.netLocTxt.textContent = d.ip || 'No location';
+          const pi = $('popIp'); if (pi) pi.textContent = d.ip || 'Unavailable';
+          const pl = $('popLoc'); if (pl) pl.textContent = '—';
+          const pisp = $('popIsp'); if (pisp) pisp.textContent = '—';
+          const pc = $('popCoords'); if (pc) pc.textContent = '—';
+          return;
+        }
+      } catch (e) {
+        // Ignored
+      }
       if (DOM.netLocTxt) DOM.netLocTxt.textContent = 'No location';
       const pi = $('popIp'); if (pi) pi.textContent = 'Unavailable';
       const pl = $('popLoc'); if (pl) pl.textContent = '—';
