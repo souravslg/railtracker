@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Train Tracker — Live Train Tracker</title>
+  <script>
+    (function () {
+      var path = window.location.pathname.replace(/\/+$/, '');
+      var parts = path.split('/').filter(Boolean);
+      var last = parts[parts.length - 1] || '';
+      var base = window.location.pathname.replace(/[^/]*$/, '');
+      var match = last.match(/^(\d{3,})(?:-.*)?$/);
+      if (match) {
+        window.location.replace(base + '?trainNo=' + encodeURIComponent(last));
+      } else {
+        window.location.replace(base);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirecting to Train Tracker…</p>
+</body>
+</html>

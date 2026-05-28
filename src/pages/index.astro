@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Modals from '../components/Modals.astro';
+import '../styles/styles.css';
+---
+
+<Layout title="Train Tracker — Live Train Tracker">
+  <Header />
+
+  <main class="main">
+    <!-- Main content area -->
+    <div id="searchResults" role="region" aria-label="Search results"></div>
+    <div id="liveView" role="region" aria-label="Live train view"></div>
+  </main>
+
+  <Footer />
+  <Modals />
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="netBadge" class="net-badge" aria-live="polite"></div>
+  <div class="fav-confirm" id="favConfirm" role="status" aria-live="polite"></div>
+  
+  <button class="fab" id="scrollTopFab" aria-label="Scroll to top">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 14l5-5 5 5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <script src="../scripts/script.js"></script>
+</Layout>

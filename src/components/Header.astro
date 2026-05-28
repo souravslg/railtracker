@@ -1,0 +1,73 @@
+---
+---
+
+<header class="app-bar" id="appBar">
+  <div class="bar-inner">
+    <div class="brand" id="brandBtn">
+      <div class="brand-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="4" y="3" width="16" height="12" rx="3" fill="white" opacity=".25"/>
+          <rect x="4" y="3" width="16" height="12" rx="3" stroke="white" stroke-width="1.8"/>
+          <circle cx="8.5" cy="18.5" r="1.8" fill="white"/>
+          <circle cx="15.5" cy="18.5" r="1.8" fill="white"/>
+          <line x1="4" y1="9" x2="20" y2="9" stroke="white" stroke-width="1.8"/>
+          <line x1="12" y1="3" x2="12" y2="9" stroke="white" stroke-width="1.8"/>
+          <line x1="8" y1="16.5" x2="16" y2="16.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">Train<em>Tracker</em></div>
+    </div>
+    <div class="search-wrap" id="trainSearchWrap">
+      <div class="search-field">
+        <span class="material-symbols-rounded ms" aria-hidden="true">search</span>
+        <input id="searchInput" type="search" placeholder="Train number or name…" autocomplete="off" inputmode="search" aria-label="Search trains">
+      </div>
+      <div id="suggestBox" role="listbox" aria-label="Suggestions"></div>
+    </div>
+    <div class="bar-right">
+      <div class="ist-badge" aria-label="Indian Standard Time">
+        <div class="dot" aria-hidden="true"></div>
+        <span id="istText" class="ist-txt">--:--</span>
+        <span class="ist-label">IST</span>
+      </div>
+      <div class="net-pill" id="netPill" title="Network Health" role="button" tabindex="0" aria-expanded="false" aria-haspopup="true">
+        <div class="net-pill-sig s0" id="netSig">
+          <div class="sig-bars" id="sigBars" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <span id="netLabel">—</span>
+        </div>
+        <div class="net-pill-loc" id="netLoc">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/>
+          </svg>
+          <span id="netLocTxt">…</span>
+        </div>
+        <div class="net-popover" id="netPopover" role="tooltip">
+          <div class="net-pop-row"><span class="net-pop-lbl">Signal</span>  <span class="net-pop-val" id="popSignal">—</span></div>
+          <div class="net-pop-row"><span class="net-pop-lbl">Type</span>    <span class="net-pop-val" id="popType">—</span></div>
+          <div class="net-pop-row"><span class="net-pop-lbl">Speed</span>   <span class="net-pop-val" id="popSpeed">—</span></div>
+          <div class="net-pop-row"><span class="net-pop-lbl">Public IP</span><span class="net-pop-val" id="popIp">—</span></div>
+          <div class="net-pop-row"><span class="net-pop-lbl">ISP</span>     <span class="net-pop-val" id="popIsp">—</span></div>
+          <div class="net-pop-row"><span class="net-pop-lbl">Location</span><span class="net-pop-val" id="popLoc">—</span></div>
+          <div class="net-pop-row"><span class="net-pop-lbl">Coords</span> <span class="net-pop-val" id="popCoords">—</span></div>
+          <div class="net-pop-row"><span class="net-pop-lbl">Latency</span><span class="net-pop-val" id="popPing">—</span></div>
+        </div>
+      </div>
+      <button class="icon-btn" id="themeToggleBtn" aria-label="Toggle theme">
+        <span class="material-symbols-rounded" id="themeIcon">light_mode</span>
+      </button>
+      <button class="icon-btn" id="favMenuBtn" aria-label="Favourites">
+        <span class="material-symbols-rounded">star</span>
+      </button>
+      <button class="refresh-btn" id="refreshBtn" aria-label="Refresh">
+        <span class="material-symbols-rounded ms refresh-icon">refresh</span>
+        <span class="txt">Refresh</span>
+      </button>
+    </div>
+  </div>
+</header>
