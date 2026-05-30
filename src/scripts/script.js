@@ -654,87 +654,99 @@
 
     // ── Derived state ──
     const route    = data.route;
-    const curCode  = data.currentPosition?.stationCode;
-    let   curIdx   = -1;
-    for (let i = 0; i < route.length; i++) { if (route[i].stationCode === curCode) { curIdx = i; break; } }
-
-    const delayMins  = Math.round((data.delayInSecs || 0) / 60);
-    const isLate     = delayMins > CFG.DELAY_LATE_MINS;
-    const isVeryLate = delayMins > CFG.DELAY_VERY_LATE;
-    const progress   = curIdx >= 0 ? Math.round(curIdx / Math.max(route.length - 1, 1) * 100) : 0;
-    const distOrig   = data.currentPosition?.distanceFromOriginKm != null
-      ? Number(data.currentPosition.distanceFromOriginKm).toFixed(1) : '—';
-    const distLast   = data.currentPosition?.distanceFromLastStationKm != null
-      ? Number(data.currentPosition.distanceFromLastStationKm).toFixed(1) : '—';
-    const origin     = route[0];
-    const dest       = route[route.length - 1];
-    const curStn     = curIdx >= 0 ? route[curIdx] : null;
-    const nextStop   = curIdx >= 0 && curIdx < route.length - 1 ? route[curIdx + 1] : null;
-    const lat        = data.currentPosition?.latLng?.latitude;
-    const lng        = data.currentPosition?.latLng?.longitude;
-    // Fix: remaining is route.length (not negative) when position unknown
-    const remaining  = curIdx >= 0 ? route.length - 1 - curIdx : route.length;
-    const remainingLabel = curIdx >= 0 ? 'Stops left' : 'Total stops';
-
     // ── Check if today's run has not started yet ──
     const originStn = route[0];
     let notStartedYet = false;
     let todayStartTs = 0;
-    if (originStn && originStn.scheduledDepartureTime) {
+    
+    if (originStn && originStn.scheduledDepartureTime && curDayOffset === 0) {
       const d = new Date(originStn.scheduledDepartureTime * 1000);
       const today = new Date();
       today.setHours(d.getHours(), d.getMinutes(), d.getSeconds(), 0);
       todayStartTs = Math.floor(today.getTime() / 1000);
+      
       if (Date.now() / 1000 < todayStartTs) {
         notStartedYet = true;
       }
     }
 
+    let curCode = data.currentPosition?.stationCode;
+    let curIdx = -1;
+    let delayMins = Math.round((data.delayInSecs || 0) / 60);
+    let progress = 0;
+    let distOrig = data.currentPosition?.distanceFromOriginKm != null ? Number(data.currentPosition.distanceFromOriginKm).toFixed(1) : '—';
+    let distLast = data.currentPosition?.distanceFromLastStationKm != null ? Number(data.currentPosition.distanceFromLastStationKm).toFixed(1) : '—';
+    let lat = data.currentPosition?.latLng?.latitude;
+    let lng = data.currentPosition?.latLng?.longitude;
+    let speedKmh = data.currentPosition?.speedKmph != null ? Math.round(data.currentPosition.speedKmph) : null;
+
+    if (notStartedYet) {
+      curCode = originStn?.stationCode;
+      curIdx = 0;
+      delayMins = 0;
+      progress = 0;
+      distOrig = '0.0';
+      distLast = '0.0';
+      lat = null;
+      lng = null;
+      speedKmh = 0;
+    } else {
+      for (let i = 0; i < route.length; i++) { if (route[i].stationCode === curCode) { curIdx = i; break; } }
+      progress = curIdx >= 0 ? Math.round(curIdx / Math.max(route.length - 1, 1) * 100) : 0;
+    }
+
+    const isLate     = delayMins > CFG.DELAY_LATE_MINS;
+    const isVeryLate = delayMins > CFG.DELAY_VERY_LATE;
+
+    const origin     = route[0];
+    const dest       = route[route.length - 1];
+    const curStn     = curIdx >= 0 ? route[curIdx] : null;
+    const nextStop   = curIdx >= 0 && curIdx < route.length - 1 ? route[curIdx + 1] : null;
+    const remaining  = curIdx >= 0 ? route.length - 1 - curIdx : route.length;
+    const remainingLabel = curIdx >= 0 ? 'Stops left' : 'Total stops';
+
     let etaStr = '—'; let etaTs = 0;
     if (nextStop) {
-      const liveArrivalSecs = nextStop.actualArrivalTime || (nextStop.scheduledArrivalTime ? nextStop.scheduledArrivalTime + (data.delayInSecs || 0) : null);
+      const liveArrivalSecs = nextStop.actualArrivalTime || (nextStop.scheduledArrivalTime ? nextStop.scheduledArrivalTime + (delayMins * 60) : null);
       if (liveArrivalSecs) {
         etaTs  = liveArrivalSecs * 1000;
         etaStr = new Date(etaTs).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
       }
     }
-    const speedKmh = data.currentPosition?.speedKmph != null ? Math.round(data.currentPosition.speedKmph) : null;
     const favFlag  = isFav(trainNo);
 
     const startingStation = originStn?.station_name || originStn?.stationName || 'Origin';
-    const yesterdayStartTs = todayStartTs - 86400;
-
-    const isReached = curIdx === route.length - 1 || progress === 100;
-    const bannerTitle = isReached ? "Train reached at destination" : "Train is running";
-    const bannerIcon = isReached ? "✅" : "🚆";
-    const bannerBg = isReached 
-      ? "linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.03))"
-      : "linear-gradient(135deg, rgba(91, 63, 255, 0.12), rgba(91, 63, 255, 0.03))";
-    const bannerBorder = isReached ? "rgba(16, 185, 129, 0.22)" : "rgba(91, 63, 255, 0.22)";
-    const titleColor = isReached ? "var(--green)" : "var(--accent)";
-    const iconBg = isReached ? "rgba(16, 185, 129, 0.16)" : "rgba(91, 63, 255, 0.16)";
-    const iconShadow = isReached ? "0 4px 10px rgba(16, 185, 129, 0.18)" : "0 4px 10px rgba(91, 63, 255, 0.18)";
     const destStation = dest?.station_name || dest?.stationName || 'Destination';
-    const bannerDescription = isReached
-      ? `Yesterday's tour completed. It started on <strong>${fmtDateTime(yesterdayStartTs)}</strong> from <strong>${startingStation}</strong> and has successfully reached <strong>${destStation}</strong>.`
-      : `Yesterday's active tour started on <strong>${fmtDateTime(yesterdayStartTs)}</strong> from <strong>${startingStation}</strong> and is currently running towards <strong>${destStation}</strong>.`;
+
+    let bannerHtml = '';
+    
+    if (notStartedYet) {
+      bannerHtml = `<div class="not-started-banner" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.03)); border-bottom: 1.5px solid rgba(245, 158, 11, 0.22);">
+        <div class="ns-icon-bg" style="background: rgba(245, 158, 11, 0.16); box-shadow: 0 4px 10px rgba(245, 158, 11, 0.18); font-size: 16px;">⏳</div>
+        <div class="ns-content">
+          <h4 style="color: var(--yellow); margin-bottom: 3px;">Train has not started yet</h4>
+          <p style="font-size: 11px; opacity: 0.95; line-height: 1.4;">
+            Today's run from <strong>${startingStation}</strong> to <strong>${destStation}</strong> is scheduled to start at <strong>${fmt(todayStartTs)}</strong>.
+          </p>
+        </div>
+      </div>`;
+    } else if (curIdx === route.length - 1 || progress === 100) {
+      bannerHtml = `<div class="not-started-banner" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.03)); border-bottom: 1.5px solid rgba(16, 185, 129, 0.22);">
+        <div class="ns-icon-bg" style="background: rgba(16, 185, 129, 0.16); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.18); font-size: 16px;">✅</div>
+        <div class="ns-content">
+          <h4 style="color: var(--green); margin-bottom: 3px;">Train reached at destination</h4>
+          <p style="font-size: 11px; opacity: 0.95; line-height: 1.4;">
+            The tour starting from <strong>${startingStation}</strong> has successfully reached <strong>${destStation}</strong>.
+          </p>
+        </div>
+      </div>`;
+    }
 
     // ── Assemble HTML from sub-renderers ──
     const h = [
       `<div class="live-panel">`,
       renderLiveHeader(trainNo, trainName, data, origin, dest, isLate, isVeryLate, delayMins, distOrig, remaining, route.length, remainingLabel, favFlag),
-      notStartedYet ? `<div class="not-started-banner" style="background: ${bannerBg}; border-bottom: 1.5px solid ${bannerBorder};">
-        <div class="ns-icon-bg" style="background: ${iconBg}; box-shadow: ${iconShadow}; font-size: 16px;">${bannerIcon}</div>
-        <div class="ns-content">
-          <h4 style="color: ${titleColor}; margin-bottom: 3px;">${bannerTitle}</h4>
-          <p style="font-size: 11px; opacity: 0.95; line-height: 1.4;">
-            ${bannerDescription}
-          </p>
-          <p style="margin-top: 5px; font-size: 10px; opacity: 0.8; font-weight: 500;">
-            Today's scheduled run starts at <strong>${fmt(todayStartTs)}</strong>.
-          </p>
-        </div>
-      </div>` : '',
+      bannerHtml,
       renderLiveProgress(origin, dest, progress),
       renderLiveStats(isLate, isVeryLate, delayMins, distOrig, distLast, etaStr, speedKmh),
       curStn ? renderLivePosition(curStn, nextStop, etaStr) : '',
