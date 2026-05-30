@@ -690,6 +690,14 @@
       lat = null;
       lng = null;
       speedKmh = 0;
+      
+      route.forEach(stn => {
+        stn.actualArrivalTime = null;
+        stn.actualDepartureTime = null;
+        stn.delayInMins = 0;
+        stn.hasDeparted = false;
+        stn.hasArrived = false;
+      });
     } else {
       for (let i = 0; i < route.length; i++) { if (route[i].stationCode === curCode) { curIdx = i; break; } }
       progress = curIdx >= 0 ? Math.round(curIdx / Math.max(route.length - 1, 1) * 100) : 0;
