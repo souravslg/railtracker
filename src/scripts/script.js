@@ -81,6 +81,7 @@
   let liveLoadingButton = null;
   let curNum           = null;
   let curName          = null;
+  let curDayOffset     = 0;
   let lastRefTs        = null;
   let searchRes        = [];
   const trainNameCache = new Map();
@@ -200,6 +201,11 @@
   /* ══════════════════════════════════════════════
      UTILS
   ══════════════════════════════════════════════ */
+  const getDateString = (offsetDays = 0) => {
+    const d = new Date();
+    if (offsetDays !== 0) d.setDate(d.getDate() + offsetDays);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
   const pad    = n  => String(n).padStart(2, '0');
   const fmt    = ts => ts
     ? new Date(ts * 1000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
@@ -381,8 +387,7 @@
       updateAR();
     }
     try {
-      const now = new Date();
-      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const today = getDateString(curDayOffset);
       const d = await fetchData(`/live-status?trainNo=${encodeURIComponent(curNum)}&startDate=${today}`);
       lastRefTs = new Date();
       renderLive(d.data, curNum, curName);
@@ -744,6 +749,7 @@
 
     wireCountdown(etaTs);
     wireFavBtn(trainNo, trainName);
+    wireDateSelect(trainNo, trainName);
     wireMap(lat, lng, trainName, curStn, isLate, delayMins, speedKmh, progress);
     wireShare(trainNo, trainName, curStn, curCode, dest, isLate, delayMins, progress);
     wireTabs(lv);
@@ -775,6 +781,13 @@
         <button class="fav-btn${favFlag ? ' active' : ''}" id="lpFavBtn" title="Favourite" style="margin-top:4px">
           <span class="material-symbols-rounded" style="font-size:22px">star</span>
         </button>
+      </div>
+      <div class="lp-date-selector">
+        <label for="liveDateSelect">Live Status:</label>
+        <select id="liveDateSelect" class="date-select">
+          <option value="0" ${curDayOffset === 0 ? 'selected' : ''}>Today</option>
+          <option value="-1" ${curDayOffset === -1 ? 'selected' : ''}>Yesterday</option>
+        </select>
       </div>
       <div class="lp-meta-row">
         <div class="meta-it"><div class="mlabel">Updated</div><div class="mval">${fmtDateTime(data.lastUpdatedTimestamp)}</div></div>
@@ -1035,6 +1048,15 @@
     });
   }
 
+  function wireDateSelect(trainNo, trainName) {
+    const sel = $('liveDateSelect');
+    if (!sel) return;
+    sel.addEventListener('change', (e) => {
+      curDayOffset = parseInt(e.target.value, 10) || 0;
+      doLive(trainNo, trainName, 'replace', null, curDayOffset);
+    });
+  }
+
   function wireMap(lat, lng, trainName, curStn, isLate, delayMins, speedKmh, progress) {
     if (lat == null || lng == null) return;
     const trainMapToggle = $('trainMapToggle');
@@ -1186,8 +1208,7 @@
     if (prefetchInFlight.has(num)) return;
     prefetchInFlight.add(num);
     try {
-      const now = new Date();
-      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const today = getDateString(0);
       await fetchData(`/live-status?trainNo=${encodeURIComponent(num)}&startDate=${today}`);
       // Older browsers may not support CSS.escape or complex selectors —
       // fall back to filtering all nodes with the attribute.
@@ -1211,19 +1232,25 @@
     el.addEventListener('focus',       trigger, { passive: true });
   }
 
-  async function doLive(num, name, routeAction = 'push', triggerEl = null) {
+  async function doLive(num, name, routeAction = 'push', triggerEl = null, forceDayOffset = null) {
     if (!num) return;
     const resolvedName = await resolveTrainName(num, name);
     syncRoute(num, resolvedName !== num ? resolvedName : null, routeAction === 'replace');
     DOM.searchResults.innerHTML = '';
     clearInterval(countdownInterval); stopAR();
+    
+    if (forceDayOffset !== null) {
+      curDayOffset = forceDayOffset;
+    } else if (curNum !== num) {
+      curDayOffset = 0; // reset to today for new train
+    }
+    
     curNum = num; curName = resolvedName;
     DOM.refreshBtn.style.display = 'flex';
     clearSuggest(); si.value = '';
     DOM.liveView.innerHTML = loader("Loading live status...");
     try {
-      const now = new Date();
-      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const today = getDateString(curDayOffset);
       const d = await fetchData(`/live-status?trainNo=${encodeURIComponent(num)}&startDate=${today}`);
       
       const apiName = d.data?.trainName || d.data?.train_name || d.data?.name;
