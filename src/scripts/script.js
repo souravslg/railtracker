@@ -446,7 +446,17 @@
 
   function clearSuggest() { if (DOM.suggestBox) DOM.suggestBox.innerHTML = ''; }
 
+  function restoreSearchWrap() {
+    const searchWrap = $('trainSearchWrap');
+    const brand = $('brandBtn');
+    if (searchWrap && brand && searchWrap.parentNode !== brand.parentNode) {
+      brand.insertAdjacentElement('afterend', searchWrap);
+      searchWrap.classList.remove('hero-mode');
+    }
+  }
+
   async function doSearch(q) {
+    restoreSearchWrap();
     const sr = DOM.searchResults, lv = DOM.liveView;
     lv.innerHTML = '';
     clearInterval(countdownInterval);
@@ -1234,6 +1244,7 @@
 
   async function doLive(num, name, routeAction = 'push', triggerEl = null, forceDayOffset = null) {
     if (!num) return;
+    restoreSearchWrap();
     const resolvedName = await resolveTrainName(num, name);
     syncRoute(num, resolvedName !== num ? resolvedName : null, routeAction === 'replace');
     DOM.searchResults.innerHTML = '';
@@ -1419,6 +1430,17 @@
       const f = favs[+c.dataset.favI];
       if (f) { attachPrefetch(c, f.num, f.name); c.addEventListener('click', () => { doLive(f.num, f.name); saveRecent(f.num, f.name); }); }
     });
+
+    // Move search wrap to hero section
+    const searchWrap = $('trainSearchWrap');
+    const heroInner = DOM.searchResults.querySelector('.welcome-hero');
+    if (searchWrap && heroInner) {
+      const sub = heroInner.querySelector('.welcome-sub');
+      if (sub) {
+        heroInner.insertBefore(searchWrap, sub);
+        searchWrap.classList.add('hero-mode');
+      }
+    }
   }
 
   function revealWelcomeAfterDelay() {
