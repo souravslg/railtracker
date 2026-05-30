@@ -1284,6 +1284,31 @@
       const today = getDateString(curDayOffset);
       const d = await fetchData(`/live-status?trainNo=${encodeURIComponent(num)}&startDate=${today}`);
       
+      // Auto-switch to yesterday if today hasn't started but an active run from yesterday is returned
+      if (forceDayOffset === null && curDayOffset === 0 && d.data?.route?.length) {
+        const originStn = d.data.route[0];
+        if (originStn && originStn.scheduledDepartureTime) {
+          const dDate = new Date(originStn.scheduledDepartureTime * 1000);
+          const tDate = new Date();
+          tDate.setHours(dDate.getHours(), dDate.getMinutes(), dDate.getSeconds(), 0);
+          const todayStartTs = Math.floor(tDate.getTime() / 1000);
+          
+          if (Date.now() / 1000 < todayStartTs) {
+            const curCode = d.data.currentPosition?.stationCode;
+            let curIdx = -1;
+            for (let i = 0; i < d.data.route.length; i++) {
+              if (d.data.route[i].stationCode === curCode) { curIdx = i; break; }
+            }
+            const progress = curIdx >= 0 ? Math.round(curIdx / Math.max(d.data.route.length - 1, 1) * 100) : 0;
+            const isReached = curIdx === d.data.route.length - 1 || progress === 100;
+            
+            if (curIdx > 0 && !isReached) {
+              curDayOffset = -1;
+            }
+          }
+        }
+      }
+      
       const apiName = d.data?.trainName || d.data?.train_name || d.data?.name;
       if (apiName && apiName !== num) {
         curName = apiName;
