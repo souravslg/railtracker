@@ -797,13 +797,9 @@
       lv.innerHTML = '<div class="loader">No route data available for this train today.</div>';
       return;
     }
-
-    // Clear any running countdown from previous render
     if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
 
-    // ── Derived state ──
-    const route    = data.route;
-    // ── Check if today's run has not started yet ──
+    const route = data.route;
     const originStn = route[0];
     let notStartedYet = false;
     let todayStartTs = 0;
@@ -813,388 +809,200 @@
       const today = new Date();
       today.setHours(d.getHours(), d.getMinutes(), d.getSeconds(), 0);
       todayStartTs = Math.floor(today.getTime() / 1000);
-      
-      if (Date.now() / 1000 < todayStartTs) {
-        notStartedYet = true;
-      }
+      if (Date.now() / 1000 < todayStartTs) notStartedYet = true;
     }
 
     let curCode = data.currentPosition?.stationCode;
     let curIdx = -1;
     let delayMins = Math.round((data.delayInSecs || 0) / 60);
     let progress = 0;
-    let distOrig = data.currentPosition?.distanceFromOriginKm != null ? Number(data.currentPosition.distanceFromOriginKm).toFixed(1) : '—';
-    let distLast = data.currentPosition?.distanceFromLastStationKm != null ? Number(data.currentPosition.distanceFromLastStationKm).toFixed(1) : '—';
+    let distOrig = data.currentPosition?.distanceFromOriginKm != null ? Number(data.currentPosition.distanceFromOriginKm).toFixed(1) : '0.0';
     let lat = data.currentPosition?.latLng?.latitude;
     let lng = data.currentPosition?.latLng?.longitude;
-    let speedKmh = data.currentPosition?.speedKmph != null ? Math.round(data.currentPosition.speedKmph) : null;
 
     if (notStartedYet) {
-      curCode = originStn?.stationCode;
-      curIdx = 0;
-      delayMins = 0;
-      progress = 0;
-      distOrig = '0.0';
-      distLast = '0.0';
-      lat = null;
-      lng = null;
-      speedKmh = 0;
-      
-      route.forEach(stn => {
-        stn.actualArrivalTime = null;
-        stn.actualDepartureTime = null;
-        stn.delayInMins = 0;
-        stn.hasDeparted = false;
-        stn.hasArrived = false;
-      });
+      curCode = originStn?.stationCode; curIdx = 0; delayMins = 0; progress = 0; distOrig = '0.0'; lat = null; lng = null;
+      route.forEach(s => { s.actualArrivalTime = null; s.actualDepartureTime = null; s.hasDeparted = false; s.hasArrived = false; });
     } else {
       for (let i = 0; i < route.length; i++) { if (route[i].stationCode === curCode) { curIdx = i; break; } }
       progress = curIdx >= 0 ? Math.round(curIdx / Math.max(route.length - 1, 1) * 100) : 0;
     }
 
-    const isLate     = delayMins > CFG.DELAY_LATE_MINS;
-    const isVeryLate = delayMins > CFG.DELAY_VERY_LATE;
+    const origin = route[0];
+    const dest = route[route.length - 1];
+    const totalDist = Number(dest?.distanceFromOriginKm || 0).toFixed(1);
+    const remDist = Math.max(0, (Number(totalDist) - Number(distOrig))).toFixed(1);
+    const favFlag = isFav(trainNo);
 
-    const origin     = route[0];
-    const dest       = route[route.length - 1];
-    const curStn     = curIdx >= 0 ? route[curIdx] : null;
-    const nextStop   = curIdx >= 0 && curIdx < route.length - 1 ? route[curIdx + 1] : null;
-    const remaining  = curIdx >= 0 ? route.length - 1 - curIdx : route.length;
-    const remainingLabel = curIdx >= 0 ? 'Stops left' : 'Total stops';
-
-    let etaStr = '—'; let etaTs = 0;
-    if (nextStop) {
-      const liveArrivalSecs = nextStop.actualArrivalTime || (nextStop.scheduledArrivalTime ? nextStop.scheduledArrivalTime + (delayMins * 60) : null);
-      if (liveArrivalSecs) {
-        etaTs  = liveArrivalSecs * 1000;
-        etaStr = new Date(etaTs).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-      }
-    }
-    const favFlag  = isFav(trainNo);
-
-    const startingStation = originStn?.station_name || originStn?.stationName || 'Origin';
-    const destStation = dest?.station_name || dest?.stationName || 'Destination';
-
-    let bannerHtml = '';
+    // Grouping intermediate stations (non-stops)
+    let timelineHtml = '<div class="rr-timeline">';
+    let currentGroup = [];
     
-    if (notStartedYet) {
-      bannerHtml = `<div class="not-started-banner" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.03)); border-bottom: 1.5px solid rgba(245, 158, 11, 0.22);">
-        <div class="ns-icon-bg" style="background: rgba(245, 158, 11, 0.16); box-shadow: 0 4px 10px rgba(245, 158, 11, 0.18); font-size: 16px;">⏳</div>
-        <div class="ns-content">
-          <h4 style="color: var(--yellow); margin-bottom: 3px;">Train has not started yet</h4>
-          <p style="font-size: 11px; opacity: 0.95; line-height: 1.4;">
-            Today's run from <strong>${startingStation}</strong> to <strong>${destStation}</strong> is scheduled to start at <strong>${fmt(todayStartTs)}</strong>.
-          </p>
-        </div>
-      </div>`;
-    } else if (curIdx === route.length - 1 || progress === 100) {
-      bannerHtml = `<div class="not-started-banner" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.03)); border-bottom: 1.5px solid rgba(16, 185, 129, 0.22);">
-        <div class="ns-icon-bg" style="background: rgba(16, 185, 129, 0.16); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.18); font-size: 16px;">✅</div>
-        <div class="ns-content">
-          <h4 style="color: var(--green); margin-bottom: 3px;">Train reached at destination</h4>
-          <p style="font-size: 11px; opacity: 0.95; line-height: 1.4;">
-            The tour starting from <strong>${startingStation}</strong> has successfully reached <strong>${destStation}</strong>.
-          </p>
-        </div>
-      </div>`;
+    function flushGroup() {
+      if (currentGroup.length === 0) return '';
+      let gh = `<div class="rr-group-toggle" onclick="this.nextElementSibling.classList.toggle('open'); this.classList.toggle('open')">${currentGroup.length} intermediate stations <span class="material-symbols-rounded" style="font-size:18px">expand_more</span></div><div class="rr-group-content">`;
+      currentGroup.forEach(s => {
+        gh += `
+          <div class="rr-tl-row non-stop">
+            <div class="rr-tl-time left"></div>
+            <div class="rr-tl-node"><div class="rr-tl-dot pass"></div></div>
+            <div class="rr-tl-info">
+              <div class="rr-tl-stn-head"><span class="stn-name">${he(s.station_name)}</span><span class="stn-code">${he(s.stationCode)}</span></div>
+              <div class="rr-tl-stn-sub">${Number(s.distanceFromOriginKm).toFixed(1)} km &bull; Passes through</div>
+            </div>
+            <div class="rr-tl-time right"></div>
+          </div>
+        `;
+      });
+      gh += '</div>';
+      currentGroup = [];
+      return gh;
     }
 
-    // ── Assemble HTML from sub-renderers ──
-    const h = [
-      `<div class="live-panel">`,
-      renderLiveHeader(trainNo, trainName, data, origin, dest, isLate, isVeryLate, delayMins, distOrig, remaining, route.length, remainingLabel, favFlag),
-      bannerHtml,
-      renderLiveProgress(origin, dest, progress),
-      renderLiveStats(isLate, isVeryLate, delayMins, distOrig, distLast, etaStr, speedKmh),
-      curStn ? renderLivePosition(curStn, nextStop, etaStr) : '',
-      etaTs  ? renderCountdownRow(nextStop, etaStr, etaTs) : '',
-      (lat != null && lng != null) ? renderMapSection(lat, lng) : '',
-      renderShareRow(),
-      renderAutoBar(),
-      renderTabs(),
-      renderTimeline(route, curIdx),
-      renderStopsTable(route, curIdx),
-      renderInfoTab(trainNo, trainName, data, route, origin, dest, progress),
-      `</div><div class="last-ref">Last refreshed: <span id="lastRefTime">—</span></div>`,
-    ].join('');
-
-    lv.innerHTML = h;
-
-    // ── Post-render wiring ──
-    requestAnimationFrame(() => setTimeout(() => {
-      const pf = $('progFill');
-      if (pf) pf.style.width = progress + '%';
-    }, 80));
-
-    wireCountdown(etaTs);
-    wireFavBtn(trainNo, trainName);
-    wireDateSelect(trainNo, trainName);
-    wireMap(lat, lng, trainName, curStn, isLate, delayMins, speedKmh, progress);
-    wireShare(trainNo, trainName, curStn, curCode, dest, isLate, delayMins, progress);
-    wireTabs(lv);
-
-    // ── Dynamic SEO ──
-    const seoTitle = `Live Running Status of ${trainName || 'Train'} (${trainNo}) - TrainTracker.in`;
-    const seoDesc = `Check live running status of ${trainName || 'Train'} (${trainNo}) which runs from ${originStn?.station_name || originStn?.stationCode || 'Source'} to ${dest?.station_name || dest?.stationCode || 'Destination'}. Spot your train in real-time on TrainTracker.in`;
-    document.title = seoTitle;
-    const metaDescEl = document.querySelector('meta[name="description"]');
-    if (metaDescEl) metaDescEl.setAttribute('content', seoDesc);
-  }
-
-  /* ── Sub-renderers ── */
-
-  function renderLiveHeader(trainNo, trainName, data, origin, dest, isLate, isVeryLate, delayMins, distOrig, remaining, total, remainingLabel, favFlag) {
-    return `<div class="lp-head">
-      <div class="lp-chips">
-        <span class="chip chip-num">${he(trainNo)}</span>
-        <span class="chip chip-src">${he(data.dataSource || 'LIVE')}</span>
-        <span class="chip ${isLate ? (isVeryLate ? 'chip-late' : 'chip-warn') : 'chip-ok'}">
-          <span class="blink"></span>${isLate ? '+' + delayMins + ' min late' : 'On Time'}
-        </span>
-      </div>
-      <div class="lp-top">
-        <div>
-          <div class="lp-title">${he(trainNo)}${trainName && trainName !== trainNo ? ' — ' + he(trainName) : ''}</div>
-          <div class="lp-route"><span class="material-symbols-rounded" style="font-size:14px">train</span>${he(origin?.station_name || '—')} → ${he(dest?.station_name || '—')}</div>
-        </div>
-        <button class="fav-btn${favFlag ? ' active' : ''}" id="lpFavBtn" title="Favourite" style="margin-top:4px">
-          <span class="material-symbols-rounded" style="font-size:22px">star</span>
-        </button>
-      </div>
-      <div class="lp-date-selector">
-        <label for="liveDateSelect">Live Status:</label>
-        <select id="liveDateSelect" class="date-select">
-          <option value="0" ${curDayOffset === 0 ? 'selected' : ''}>Today</option>
-          <option value="-1" ${curDayOffset === -1 ? 'selected' : ''}>Yesterday</option>
-        </select>
-      </div>
-      <div class="lp-meta-row">
-        <div class="meta-it"><div class="mlabel">Updated</div><div class="mval">${fmtDateTime(data.lastUpdatedTimestamp)}</div></div>
-        <div class="meta-it"><div class="mlabel">Covered</div><div class="mval">${distOrig} km</div></div>
-        <div class="meta-it"><div class="mlabel">${he(remainingLabel)}</div><div class="mval">${remaining}</div></div>
-        <div class="meta-it"><div class="mlabel">Total stops</div><div class="mval">${total}</div></div>
-      </div>
-    </div>`;
-  }
-
-  function renderLiveProgress(origin, dest, progress) {
-    return `<div class="lp-progress">
-      <div class="prog-head">
-        <span class="prog-endpoints">${he(origin?.stationCode || '')} → ${he(dest?.stationCode || '')}</span>
-        <span class="prog-pct">${progress}%</span>
-      </div>
-      <div class="linear-track"><div class="linear-fill" id="progFill" style="width:0%"></div></div>
-      <div class="prog-labels">
-        <span class="prog-lbl">${he(origin?.station_name || '')}</span>
-        <span class="prog-lbl" style="text-align:right">${he(dest?.station_name || '')}</span>
-      </div>
-    </div>`;
-  }
-
-  // SVGs extracted as constants — generated once, not per-render
-  const SVG = {
-    delay: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><polyline points="12 7 12 12 15 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-    route: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="19" r="2" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="5" r="2" stroke="currentColor" stroke-width="1.8"/><path d="M6 17v-4a6 6 0 0 1 6-6h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-    loc:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/></svg>`,
-    timer: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/></svg>`,
-    speed: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 12L8.5 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><path d="M3 12a9 9 0 1 1 18 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5.6 16.8L8 14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18.4 16.8L16 14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-    train: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="12" rx="3" fill="white" opacity=".3"/><rect x="4" y="3" width="16" height="12" rx="3" stroke="white" stroke-width="1.8"/><circle cx="8.5" cy="18.5" r="1.8" fill="white"/><circle cx="15.5" cy="18.5" r="1.8" fill="white"/><line x1="4" y1="9" x2="20" y2="9" stroke="white" stroke-width="1.8"/><line x1="12" y1="3" x2="12" y2="9" stroke="white" stroke-width="1.8"/></svg>`,
-  };
-
-  function renderLiveStats(isLate, isVeryLate, delayMins, distOrig, distLast, etaStr, speedKmh) {
-    return `<div class="stats-row">
-      <div class="stat-it"><div style="color:${isLate ? 'var(--red)' : 'var(--green)'};display:flex;justify-content:center;margin-bottom:4px">${SVG.delay}</div><div class="sval ${isLate ? 'r' : 'g'}">${isLate ? '+' + delayMins : '0'}</div><div class="slbl">Min Delay</div></div>
-      <div class="stat-it"><div style="color:var(--accent);display:flex;justify-content:center;margin-bottom:4px">${SVG.route}</div><div class="sval b">${distOrig}</div><div class="slbl">KM Done</div></div>
-      <div class="stat-it"><div style="color:var(--text3);display:flex;justify-content:center;margin-bottom:4px">${SVG.loc}</div><div class="sval">${distLast}</div><div class="slbl">KM Last Stn</div></div>
-      <div class="stat-it"><div style="color:var(--accent);display:flex;justify-content:center;margin-bottom:4px">${SVG.timer}</div><div class="sval b" style="font-size:13px">${etaStr}</div><div class="slbl">ETA Next</div></div>
-      ${speedKmh !== null ? `<div class="stat-it"><div style="color:var(--yellow);display:flex;justify-content:center;margin-bottom:4px">${SVG.speed}</div><div class="sval y">${speedKmh}</div><div class="slbl">km/h</div></div>` : ''}
-    </div>`;
-  }
-
-  function renderLivePosition(curStn, nextStop, etaStr) {
-    return `<div class="lp-pos">
-      <div class="pos-icon">${SVG.train}</div>
-      <div class="pos-info">
-        <div class="pos-at">Currently At</div>
-        <div class="pos-name">${he(curStn.station_name)}</div>
-        <div class="pos-sub">${he(curStn.stationCode)} · Platform ${he(curStn.platformNumber || '—')}</div>
-      </div>
-      <div class="pos-next">${nextStop
-        ? `<div class="next-lbl">NEXT STOP</div><div class="next-name">${he(nextStop.station_name)}</div><div class="next-chip">ETA ${etaStr}</div>`
-        : `<div class="next-chip">🏁 Final Destination</div>`
-      }</div>
-    </div>`;
-  }
-
-  function renderCountdownRow(nextStop, etaStr, etaTs) {
-    const schTs = nextStop?.scheduledArrivalTime || 0;
-    const expTs = etaTs / 1000;
-    const isDifferent = schTs > 0 && expTs > 0 && schTs !== expTs;
-    const isLate = expTs > schTs;
-    const isEarly = expTs < schTs;
-
-    return `<div class="cd-row">
-      <div><div class="cd-lbl">ARRIVES IN</div><div class="cd-val" id="cdVal">--:--</div></div>
-      <div style="flex:1">
-        <div class="cd-stn">${he(nextStop?.station_name || '')}</div>
-        <div class="cd-code">${he(nextStop?.stationCode || '')} · PF ${he(nextStop?.platformNumber || '—')}</div>
-      </div>
-      <div class="cd-right">
-        <div class="cd-sched-lbl">${isDifferent ? (isEarly ? 'EARLY' : 'EXPECTED') : 'SCHEDULED'}</div>
-        ${isDifferent ? `<div class="t-sch" style="font-size:11px;margin-bottom:2px">${fmt(schTs)}</div>` : ''}
-        <div class="cd-sched-val" style="${isLate ? 'color:var(--red)' : isEarly ? 'color:var(--green)' : ''}">${etaStr}</div>
-      </div>
-    </div>`;
-  }
-
-  function renderMapSection(lat, lng) {
-    const gmapUrl = `https://maps.google.com/maps?q=${lat},${lng}&z=14&output=embed`;
-    return `<div class="train-map-section">
-      <button class="train-map-toggle" id="trainMapToggle">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13V7m0 13 6 1m-6-14 6-2m0 15 5.447-2.724A1 1 0 0 0 21 16.382V5.618a1 1 0 0 0-1.447-.894L15 7m0 13V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Live Train Location
-        <span style="margin-left:6px;font-size:10px;opacity:.6;font-family:var(--mono)">${Number(lat).toFixed(4)}°, ${Number(lng).toFixed(4)}°</span>
-        <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <div class="train-map-outer" id="trainMapOuter">
-        <div class="map-tab-bar">
-          <button class="map-tab active" data-map="leaflet">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10A15.3 15.3 0 0 1 8 12a15.3 15.3 0 0 1 4-10z" stroke="currentColor" stroke-width="1.8"/></svg>
-            OpenStreetMap
-          </button>
-          <button class="map-tab" data-map="google">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/></svg>
-            Google Maps
-          </button>
-        </div>
-        <div class="map-pane active" id="mapPaneLeaflet"><div id="trainLeafletMap"></div></div>
-        <div class="map-pane" id="mapPaneGoogle" data-src="${he(gmapUrl)}"></div>
-      </div>
-    </div>`;
-  }
-
-  function renderShareRow() {
-    return `<div class="share-row">
-      <span class="share-lbl">Share</span>
-      <button class="share-btn" id="copyShareBtn"><span class="material-symbols-rounded" style="font-size:15px">content_copy</span> Copy</button>
-      <button class="share-btn" id="waShareBtn"><span class="material-symbols-rounded" style="font-size:15px">chat</span> WhatsApp</button>
-      <button class="share-btn" id="dlShareBtn"><span class="material-symbols-rounded" style="font-size:15px">download</span> Save</button>
-    </div>`;
-  }
-
-  function renderAutoBar() {
-    return `<div class="auto-bar">
-      <div class="auto-bar-l">
-        <div class="live-ind"><div class="live-dot"></div>LIVE</div>
-        <div class="ar-prog"><div class="ar-fill" id="arFill" style="width:0%"></div></div>
-      </div>
-      <span class="ar-lbl" id="arCd">Next in ${CFG.AR_INTERVAL_SECS}s</span>
-    </div>`;
-  }
-
-  function renderTabs() {
-    return `<div class="md3-tabs">
-      <button class="tab-btn active" data-tab="tab-tl">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><line x1="8" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="6" x2="3.01" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="12" x2="3.01" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="18" x2="3.01" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        Timeline
-      </button>
-      <button class="tab-btn" data-tab="tab-table">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" stroke-width="1.8"/><line x1="3" y1="15" x2="21" y2="15" stroke="currentColor" stroke-width="1.8"/><line x1="9" y1="9" x2="9" y2="21" stroke="currentColor" stroke-width="1.8"/></svg>
-        All Stops
-      </button>
-      <button class="tab-btn" data-tab="tab-info">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><line x1="12" y1="8" x2="12" y2="8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="12" x2="12" y2="16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        Details
-      </button>
-    </div>`;
-  }
-
-  function renderTimeline(route, curIdx) {
-    let h = `<div id="tab-tl" class="tab-content active"><div class="lp-timeline"><div class="sec-title">Journey Timeline</div><div class="tl-wrap"><div class="tl-line"></div>`;
     for (let i = 0; i < route.length; i++) {
-      const s = route[i], isCur = i === curIdx, isPast = i < curIdx;
-      const isNonStop = s.isStoppage === false || s.isStoppage === 0 || s.stoppage === false || s.stoppage === 0 || s.haltDuration === 0 || s.haltDuration === "00:00" || s.haltMins === 0 || (s.scheduledArrivalTime === s.scheduledDepartureTime && s.scheduledArrivalTime !== null && i !== 0 && i !== route.length - 1);
-      const cls  = isCur ? 'current' : isPast ? 'past' : 'future';
-      const aD   = delaySecs(s.actualArrivalTime, s.scheduledArrivalTime);
-      const dD   = delaySecs(s.actualDepartureTime, s.scheduledDepartureTime);
-      const aCls = s.actualArrivalTime   ? (aD > CFG.DELAY_CHIP_THRESH ? 'r' : 'g') : 'd';
-      const dCls = s.actualDepartureTime ? (dD > CFG.DELAY_CHIP_THRESH ? 'r' : 'g') : 'd';
-      let statusBadge = '';
-      if      (isCur)            statusBadge = `<span class="stop-status s-here">● Here</span>`;
-      else if (isPast)           statusBadge = `<span class="stop-status s-done">✓ Done</span>`;
-      else if (i === curIdx + 1) statusBadge = `<span class="stop-status s-next">→ Next</span>`;
-      else                       statusBadge = `<span class="stop-status s-upcoming">Upcoming</span>`;
-      h += `<div class="stop ${cls}"><div class="stop-dot">${isCur ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="display:block;color:white"><path d="M12 2c-4 0-6 2-6 6v7c0 1.5.5 3 2 3l-2 2v1h12v-1l-2-2c1.5 0 2-1.5 2-3V8c0-4-2-6-6-6zm0 3c1.5 0 2 .5 2 1.5s-.5 1.5-2 1.5-2-.5-2-1.5S10.5 5 12 5zm-3 8c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm6 0c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z" fill="currentColor"/></svg>` : ''}</div>
-        <div class="stop-row">
-          <div class="stop-info">
-            <div class="sname" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px">
-              ${he(s.station_name)}
-              ${isNonStop ? `<span class="non-stop-badge">Non Stop</span>` : ''}
+      const s = route[i];
+      const isCur = i === curIdx;
+      const isPast = i < curIdx;
+      
+      const isNonStop = s.isStoppage === false || s.haltDuration === 0 || s.haltDuration === "00:00" || s.haltMins === 0 || (s.scheduledArrivalTime === s.scheduledDepartureTime && s.scheduledArrivalTime !== null && i !== 0 && i !== route.length - 1);
+      
+      if (isNonStop) {
+        currentGroup.push(s);
+        continue;
+      } else {
+        timelineHtml += flushGroup();
+      }
+      
+      const arrD = delaySecs(s.actualArrivalTime, s.scheduledArrivalTime);
+      const depD = delaySecs(s.actualDepartureTime, s.scheduledDepartureTime);
+      let dotClass = 'fut';
+      if (isPast) dotClass = 'past';
+      if (isCur) dotClass = 'cur';
+
+      timelineHtml += `
+        <div class="rr-tl-row ${isCur ? 'rr-tl-cur' : ''}">
+          <div class="rr-tl-time left">
+            <span class="t-sch">${fmt(s.scheduledArrivalTime)}</span>
+            ${s.actualArrivalTime ? `<span class="t-act ${arrD > 300 ? 'late' : ''}">${fmt(s.actualArrivalTime)}</span>` : ''}
+          </div>
+          <div class="rr-tl-node">
+            <div class="rr-tl-dot ${dotClass}"></div>
+          </div>
+          <div class="rr-tl-info">
+            <div class="rr-tl-stn-head">
+              <span class="stn-name">${he(s.station_name)}</span>
+              <span class="stn-code">${he(s.stationCode)}</span>
             </div>
-            <div class="scode">${he(s.stationCode)} · #${s.stopIndex || (i + 1)}</div>
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px">
-              ${statusBadge}
-              ${s.platformNumber ? `<div class="pf-chip">PF ${he(s.platformNumber)}</div>` : ''}
+            <div class="rr-tl-stn-sub">
+              ${Number(s.distanceFromOriginKm).toFixed(1)} km &bull; PF ${he(s.platformNumber || '—')} 
+              ${depD > 300 ? `<span class="late-txt">+${Math.round(depD/60)}m</span>` : ''}
             </div>
           </div>
-          <div class="stop-times">
-            <div class="t-grp"><div class="t-label">Arrival</div>${aD > CFG.DELAY_CHIP_SECS ? `<div class="t-sch">${fmt(s.scheduledArrivalTime)}</div>` : ''}<div class="t-val ${aCls}">${fmt(s.actualArrivalTime || s.scheduledArrivalTime)}</div>${aD > CFG.DELAY_CHIP_SECS ? `<div class="d-chip">+${Math.round(aD / 60)}m late</div>` : ''}</div>
-            <div class="t-grp"><div class="t-label">Depart</div>${dD > CFG.DELAY_CHIP_SECS ? `<div class="t-sch">${fmt(s.scheduledDepartureTime)}</div>` : ''}<div class="t-val ${dCls}">${fmt(s.actualDepartureTime || s.scheduledDepartureTime)}</div>${dD > CFG.DELAY_CHIP_SECS ? `<div class="d-chip">+${Math.round(dD / 60)}m late</div>` : ''}</div>
+          <div class="rr-tl-time right">
+            <span class="t-sch">${fmt(s.scheduledDepartureTime)}</span>
+            ${s.actualDepartureTime ? `<span class="t-act ${depD > 300 ? 'late' : ''}">${fmt(s.actualDepartureTime)}</span>` : ''}
           </div>
         </div>
-      </div>${i < route.length - 1 ? '<hr class="stop-div">' : ''}`;
+      `;
     }
-    return h + `</div></div></div></div>`;
-  }
+    timelineHtml += flushGroup();
+    timelineHtml += '</div>';
 
-  function renderStopsTable(route, curIdx) {
-    let h = `<div id="tab-table" class="tab-content"><div style="padding:16px 20px;background:var(--surface)"><div class="sec-title">All Stops</div>
-      <div class="stops-wrap"><table>
-        <thead><tr><th>#</th><th>Station</th><th>Code</th><th>PF</th><th>Sch Arr</th><th>Act Arr</th><th>Sch Dep</th><th>Act Dep</th><th>Delay</th></tr></thead>
-        <tbody>`;
-    for (let i = 0; i < route.length; i++) {
-      const s   = route[i], isCur = i === curIdx, isPast = i < curIdx;
-      const isNonStop = s.isStoppage === false || s.isStoppage === 0 || s.stoppage === false || s.stoppage === 0 || s.haltDuration === 0 || s.haltDuration === "00:00" || s.haltMins === 0 || (s.scheduledArrivalTime === s.scheduledDepartureTime && s.scheduledArrivalTime !== null && i !== 0 && i !== route.length - 1);
-      const rc  = isCur ? 'row-cur' : isPast ? 'row-past' : 'row-fut';
-      const md  = Math.max(delaySecs(s.actualArrivalTime, s.scheduledArrivalTime), delaySecs(s.actualDepartureTime, s.scheduledDepartureTime));
-      h += `<tr class="${rc}"><td>${i + 1}${isCur ? '<span class="cur-arrow"> ◀</span>' : ''}</td>
-        <td class="td-name">
-          <div style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px">
-            ${he(s.station_name)}
-            ${isNonStop ? `<span class="non-stop-badge">Non Stop</span>` : ''}
-          </div>
-        </td><td class="td-code">${he(s.stationCode)}</td>
-        <td class="td-pf">${he(s.platformNumber || '—')}</td>
-        <td class="td-t">${fmt(s.scheduledArrivalTime)}</td><td class="td-t">${fmt(s.actualArrivalTime)}</td>
-        <td class="td-t">${fmt(s.scheduledDepartureTime)}</td><td class="td-t">${fmt(s.actualDepartureTime)}</td>
-        <td class="td-d ${md > CFG.DELAY_CHIP_THRESH ? 'late' : 'ok'}">${md > CFG.DELAY_CHIP_SECS ? '+' + Math.round(md / 60) + 'm' : '—'}</td>
-      </tr>`;
-    }
-    return h + `</tbody></table></div></div></div>`;
-  }
-
-  function renderInfoTab(trainNo, trainName, data, route, origin, dest, progress) {
-    const cell = (label, val, small = false) =>
-      `<div class="meta-it info-card">
-        <div class="mlabel">${label}</div>
-        <div class="mval"${small ? ' style="font-size:12px"' : ''}>${val}</div>
-      </div>`;
-    return `<div id="tab-info" class="tab-content"><div style="padding:16px 20px;background:var(--surface)">
-      <div class="sec-title">Train Details</div>
-      <div class="info-grid">
-        ${cell('Train Number', he(trainNo))}
-        ${cell('Train Name', he(trainName !== trainNo ? trainName : '—'), true)}
-        ${cell('Data Source', he(data.dataSource || '—'), true)}
-        ${cell('Stops', route.length)}
-        ${cell('Progress', progress + '%')}
-        ${cell('Origin', he(origin?.station_name || '—'), true)}
-        ${cell('Destination', he(dest?.station_name || '—'), true)}
+    const gmapUrl = lat != null ? `https://maps.google.com/maps?q=${lat},${lng}&z=14&output=embed` : '';
+    const mapHtml = (lat != null && lng != null) ? `
+      <div class="rr-map-wrap">
+         <iframe src="${gmapUrl}" class="rr-map-frame" loading="lazy"></iframe>
       </div>
-    </div></div>`;
+    ` : `<div style="padding:40px;text-align:center;color:var(--text3)">Map tracking not available currently</div>`;
+
+    const html = `
+      <div class="rr-live-root">
+        <div class="rr-hdr-bg">
+          <div class="rr-hdr-top">
+            <button class="rr-icon-btn" onclick="restoreSearchWrap()">
+              <span class="material-symbols-rounded">arrow_back</span>
+            </button>
+            <div class="rr-hdr-title">
+              <div class="num">${he(trainNo)}</div>
+              <div class="name">${he(trainName)}</div>
+            </div>
+            <div class="rr-hdr-actions">
+              <button class="rr-icon-btn rr-date-btn">
+                <span class="material-symbols-rounded">calendar_month</span>
+                <div class="rrd-texts">
+                  <span class="lbl">Start Date</span>
+                  <span class="val">${curDayOffset === 0 ? 'Today' : 'Yesterday'}</span>
+                </div>
+                <select id="liveDateSelect"><option value="0" ${curDayOffset === 0 ? 'selected' : ''}>Today</option><option value="-1" ${curDayOffset === -1 ? 'selected' : ''}>Yesterday</option></select>
+              </button>
+            </div>
+          </div>
+          <div class="rr-tabs">
+            <button class="rr-tab active" data-rrtab="tracker">tracker</button>
+            <button class="rr-tab" data-rrtab="details">details</button>
+          </div>
+        </div>
+        
+        <div class="rr-tab-content active" id="rrTab-tracker">
+          <div class="rr-tracker-card">
+            ${notStartedYet ? `<div style="padding:12px 16px;background:rgba(245,158,11,0.1);color:#b45309;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;"><span class="material-symbols-rounded" style="font-size:16px">schedule</span> Train has not started yet.</div>` : ''}
+            <div class="rr-tc-head">
+              <div class="rr-tc-title"><span class="num">${he(trainNo)}</span><span class="divi"></span><span class="name">${he(trainName)}</span></div>
+            </div>
+            <div class="rr-tc-route">
+              <div class="stns"><span>${he(origin?.station_name)}</span><span>${he(dest?.station_name)}</span></div>
+              <div class="rr-tc-prog">
+                <div class="track"><div class="fill" style="width:${progress}%"></div></div>
+                <div class="train-icon" style="left:${progress}%"><span class="material-symbols-rounded">tram</span></div>
+              </div>
+              <div class="dist"><span>${totalDist} km</span><span>${remDist} km remaining</span></div>
+            </div>
+            <div class="rr-tl-hdr">
+              <div class="l">Arr</div>
+              <div class="m"></div>
+              <div class="r">Dep</div>
+            </div>
+            ${timelineHtml}
+          </div>
+        </div>
+
+        <div class="rr-tab-content" id="rrTab-details">
+          ${mapHtml}
+          <div style="padding:20px;text-align:center">
+             <button class="fav-btn ${favFlag ? 'active' : ''}" id="lpFavBtn" style="width:100%;max-width:300px;border-radius:12px;display:inline-flex;justify-content:center;padding:12px;background:var(--surface);border:1px solid var(--border2);align-items:center;gap:10px;font-family:var(--font);font-weight:600;cursor:pointer;">
+               <span class="material-symbols-rounded" style="color:var(--yellow)">star</span>
+               ${favFlag ? 'Saved to Favourites' : 'Add to Favourites'}
+             </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    lv.innerHTML = html;
+
+    lv.querySelectorAll('.rr-tab').forEach(btn => {
+      btn.addEventListener('click', function() {
+        lv.querySelectorAll('.rr-tab').forEach(b => b.classList.remove('active'));
+        lv.querySelectorAll('.rr-tab-content').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('rrTab-' + this.dataset.rrtab).classList.add('active');
+      });
+    });
+
+    const lds = $('liveDateSelect');
+    if(lds) lds.addEventListener('change', e => {
+      curDayOffset = parseInt(e.target.value, 10) || 0;
+      doLive(trainNo, trainName, 'replace', null, curDayOffset);
+    });
+
+    const fBtn = $('lpFavBtn');
+    if(fBtn) fBtn.addEventListener('click', () => {
+      if(isFav(trainNo)) { removeFav(trainNo); fBtn.classList.remove('active'); fBtn.innerHTML = '<span class="material-symbols-rounded" style="color:var(--yellow)">star</span> Add to Favourites'; }
+      else { saveFav(trainNo, trainName); fBtn.classList.add('active'); fBtn.innerHTML = '<span class="material-symbols-rounded" style="color:var(--yellow)">star</span> Saved to Favourites'; }
+    });
+
+    document.title = `Live Running Status of ${trainName || 'Train'} (${trainNo}) - TrainTracker.in`;
   }
-
-  /* ── Post-render wire functions ── */
-
   function wireCountdown(etaTs) {
     if (!etaTs) return;
     // Guard: clear any previous interval before starting a new one
