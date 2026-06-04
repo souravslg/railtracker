@@ -449,6 +449,7 @@
   function restoreSearchWrap() {
     const searchWrap = $('trainSearchWrap');
     const brand = $('brandBtn');
+    if (searchWrap) searchWrap.style.display = '';
     if (searchWrap && brand && searchWrap.parentNode !== brand.parentNode) {
       brand.insertAdjacentElement('afterend', searchWrap);
       searchWrap.classList.remove('hero-mode');
@@ -1399,93 +1400,163 @@
      WELCOME
   ══════════════════════════════════════════════ */
   function showWelcome() {
-    const recent = getRecent(), favs = getFavs();
-    let h = `<div class="welcome"><div class="welcome-hero">
-      <div class="welcome-icon">
-        <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-          <rect x="4" y="3" width="16" height="13" rx="3" fill="var(--accent)" opacity=".15"/>
-          <rect x="4" y="3" width="16" height="13" rx="3" stroke="var(--accent)" stroke-width="1.5"/>
-          <circle cx="8" cy="19" r="2" fill="var(--accent)"/>
-          <circle cx="16" cy="19" r="2" fill="var(--accent)"/>
-          <line x1="4" y1="9" x2="20" y2="9" stroke="var(--accent)" stroke-width="1.5"/>
-          <line x1="12" y1="3" x2="12" y2="9" stroke="var(--accent)" stroke-width="1.5"/>
-          <line x1="8" y1="17" x2="16" y2="17" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
+    let h = `
+    <div class="rr-welcome">
+      <div class="rr-welcome-top">
+        <a href="#" class="rr-map-btn" style="text-decoration:none">
+          <div class="rr-map-icon"><span class="material-symbols-rounded">radar</span></div>
+          <div class="rr-map-info">
+            <div class="rr-map-title">Live Train Map <span class="rr-badge-live">Live</span></div>
+            <div class="rr-map-sub">Track 132,000 km of active rail network</div>
+          </div>
+          <div class="rr-map-arrow"><span class="material-symbols-rounded">arrow_forward</span></div>
+        </a>
+
+        <div class="rr-card">
+          <div class="rr-card-header">
+            <div class="rr-icon-bg bg-success-light"><span class="material-symbols-rounded text-success">arrow_right_alt</span></div>
+            <span>Find Trains</span>
+          </div>
+          <div class="rr-card-body">
+            <div class="rr-input-row">
+              <span class="material-symbols-rounded text-success">location_on</span>
+              <input type="text" placeholder="From Station" disabled>
+            </div>
+            <div class="rr-input-row border-top">
+              <span class="material-symbols-rounded text-primary">train</span>
+              <input type="text" placeholder="To Station" disabled>
+            </div>
+            <div class="rr-card-action">
+              <button class="rr-btn rr-btn-primary" disabled>View Trains <span class="material-symbols-rounded" style="font-size:16px;margin-left:4px">arrow_forward</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="rr-card">
+          <div class="rr-card-header">
+            <div class="rr-icon-bg bg-primary-light"><span class="material-symbols-rounded text-primary">train</span></div>
+            <span>Live Train Status</span>
+          </div>
+          <div class="rr-card-body" style="display:flex;align-items:center;gap:10px;padding:12px 16px;">
+            <div style="flex:1">
+              <input type="text" id="rrWelcomeTrainSearch" class="rr-input-clear" placeholder="Train number or name" autocomplete="off">
+            </div>
+            <button class="rr-btn rr-btn-primary" id="rrWelcomeTrainBtn" style="padding:10px 14px; width: auto;"><span class="material-symbols-rounded">search</span></button>
+          </div>
+        </div>
+
+        <div class="rr-card">
+          <div class="rr-card-header">
+            <div class="rr-icon-bg bg-primary-light"><span class="material-symbols-rounded text-primary">radar</span></div>
+            <span>Live Station Board</span>
+          </div>
+          <div class="rr-card-body" style="display:flex;align-items:center;gap:10px;padding:12px 16px;">
+            <div style="flex:1">
+              <input type="text" placeholder="Station code or name" disabled class="rr-input-clear">
+            </div>
+            <button class="rr-btn rr-btn-primary" disabled style="padding:10px 14px; width: auto;"><span class="material-symbols-rounded">search</span></button>
+          </div>
+        </div>
       </div>
-      <div class="welcome-title">
-        Track any train
-        <span class="welcome-word-card card">
-          <span class="loader welcome-word-loader">
-            <span class="words">
-              <span class="word">live</span>
-              <span class="word">status</span>
-              <span class="word">routes</span>
-              <span class="word">arrivals</span>
-              <span class="word">departures</span>
-              <span class="word">delays</span>
-              <span class="word">platforms</span>
-              <span class="word">coaches</span>
-              <span class="word">maps</span>
-              <span class="word">schedule</span>
-            </span>
-          </span>
-        </span>
-      </div>
-      <div class="welcome-sub">Type a train number or name above to get started. Press <kbd style="font-size:11px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:1px 5px">/</kbd> to focus search.</div>
-      <div class="welcome-badges">
-        <span class="welcome-badge"><span class="blink"></span>Live updates</span>
-        <span class="welcome-badge"><span class="material-symbols-rounded" style="font-size:14px">route</span>Route insight</span>
-        <span class="welcome-badge"><span class="material-symbols-rounded" style="font-size:14px">schedule</span>Auto refresh</span>
-      </div>
-      <div class="welcome-metrics">
-        <div class="welcome-metric"><div class="wm-label">Track</div><div class="wm-value">Realtime arrivals</div></div>
-        <div class="welcome-metric"><div class="wm-label">Save</div><div class="wm-value">Favorites + recents</div></div>
-        <div class="welcome-metric"><div class="wm-label">Map</div><div class="wm-value">Live position view</div></div>
+
+      <div class="rr-welcome-text-sections">
+        <div class="rr-hero-banner">
+          <h1>Live Train Running Status</h1>
+          <p>Check the exact live train status and real-time GPS location of any Indian Railways train. Track current speed, delay, and expected arrival time instantly on an interactive map.</p>
+        </div>
+
+        <div class="rr-text-card">
+          <h2>TrainTracker Features</h2>
+          <div class="rr-grid-2">
+            <div class="rr-feature">
+              <h3><span class="material-symbols-rounded text-primary">radar</span> Visual Train Tracking</h3>
+              <p>Watch trains move live on an interactive map using real-time GPS telemetry.</p>
+            </div>
+            <div class="rr-feature">
+              <h3><span class="material-symbols-rounded text-primary">route</span> Trains Between Stations</h3>
+              <p>Search available trains running between two stations and check their live running status.</p>
+            </div>
+            <div class="rr-feature">
+              <h3><span class="material-symbols-rounded text-primary">bolt</span> Live Station Arrivals</h3>
+              <p>View the live station board for upcoming train arrivals and departures.</p>
+            </div>
+            <div class="rr-feature">
+              <h3><span class="material-symbols-rounded text-primary">navigation</span> Offline Mode</h3>
+              <p>Track train locations without an internet connection using the mobile application.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rr-text-card">
+          <h2 style="display:flex;align-items:center;gap:8px;"><span class="material-symbols-rounded text-primary">search</span>How to check train status</h2>
+          <div class="rr-grid-3">
+            <div class="rr-step">
+              <h3><span class="rr-step-num">1</span> Enter Train Details</h3>
+              <p>Input the 5-digit train number or train name in the search box.</p>
+            </div>
+            <div class="rr-step">
+              <h3><span class="rr-step-num">2</span> View Live Location</h3>
+              <p>See the train's exact coordinates, speed, and delay on the map.</p>
+            </div>
+            <div class="rr-step">
+              <h3><span class="rr-step-num">3</span> Check Arrival Time</h3>
+              <p>Review the timetable for expected arrival times and platform numbers.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rr-text-card rr-bg-muted">
+          <h2>About TrainTracker</h2>
+          <p>TrainTracker is a modern transit tracking platform built to visualize Indian Railways data. Rather than displaying a static list of passed stations, the application plots all active trains directly on an interactive geographical map.</p>
+          <p style="margin-top:12px">By aggregating live GPS telemetry, the system calculates precise real-time location updates, delays, and dynamic arrival estimations directly on the map interface.</p>
+        </div>
+
+        <div class="rr-text-card" style="padding:0;overflow:hidden">
+          <div class="rr-faq-header">
+            <span class="material-symbols-rounded">help</span> Frequently Asked Questions
+          </div>
+          <div class="rr-faq-item">
+            <h4>How do I find my train running status?</h4>
+            <p>Enter the train number or name in the search bar to view the train's real-time location on the map.</p>
+          </div>
+          <div class="rr-faq-item">
+            <h4>Can the train status be tracked without internet?</h4>
+            <p>Yes. The mobile application utilizes the device's internal GPS alongside an offline schedule to track live location without an active internet connection.</p>
+          </div>
+          <div class="rr-faq-item">
+            <h4>Are the platform allocations accurate?</h4>
+            <p>Platform numbers are predicted based on historical routing data. Passengers must verify the final platform on official railway station displays.</p>
+          </div>
+        </div>
+
+        <div class="rr-notice">Notice: TrainTracker is an independent technology platform. It is not affiliated with the Ministry of Railways or IRCTC.</div>
       </div>
     </div>`;
-    if (!navigator.onLine && (recent.length || favs.length)) {
-      h += `<div style="margin:0 4px 18px;padding:10px 12px;border:1px solid var(--border2);border-radius:var(--r2);background:var(--yellow-bg);color:var(--yellow);font-size:12px;line-height:1.5">Offline mode: saved recent searches and favourites still open from cache.</div>`;
-    }
-    if (favs.length) {
-      h += `<div class="section-row"><div class="section-lbl">⭐ Favourites</div><button class="clear-btn" id="manageFavsBtn">Manage</button></div><div class="chips-row">`;
-      favs.forEach((f, i) => h += `<div class="r-chip" data-fav-i="${i}"><span class="r-num">${he(f.num)}</span><span>${he(f.name)}</span></div>`);
-      h += `</div>`;
-    }
-    if (recent.length) {
-      h += `<div class="section-row"><div class="section-lbl">Recent Searches</div><button class="clear-btn" id="clearRecentBtn">Clear</button></div><div class="chips-row">`;
-      recent.forEach((r, i) => h += `<div class="r-chip" data-recent-i="${i}"><span class="r-num">${he(r.num)}</span><span>${he(r.name)}</span></div>`);
-      h += `</div>`;
-    }
-    h += `<div class="howto-card"><div class="howto-title">How to use Train Tracker</div><div class="howto-items">
-      <div class="howto-item"><div class="howto-icon-bg" style="background:rgba(91,63,255,.08);font-size:18px;color:var(--accent)">🔍</div><div><h4>Search</h4><p>Type a train number (e.g. 12728) or name — or press <kbd>/</kbd></p></div></div>
-      <div class="howto-item"><div class="howto-icon-bg" style="background:rgba(220,38,38,.08);font-size:18px">📍</div><div><h4>Track</h4><p>Click Track to see real-time position, platform &amp; delay info</p></div></div>
-      <div class="howto-item"><div class="howto-icon-bg" style="background:rgba(217,119,6,.08);font-size:18px">⭐</div><div><h4>Favourites</h4><p>Star trains to save them for quick access</p></div></div>
-      <div class="howto-item"><div class="howto-icon-bg" style="background:rgba(5,150,105,.08);font-size:18px">🔄</div><div><h4>Auto-refresh</h4><p>Live data updates every ${CFG.AR_INTERVAL_SECS} seconds automatically</p></div></div>
-    </div></div></div>`;
+
     DOM.searchResults.innerHTML = h;
     DOM.liveView.innerHTML      = '';
-    revealWelcomeAfterDelay();
-    $('clearRecentBtn')?.addEventListener('click', clearRecent);
-    $('manageFavsBtn')?.addEventListener('click', openFavModal);
-    document.querySelectorAll('[data-recent-i]').forEach(c => {
-      const r = recent[+c.dataset.recentI];
-      if (r) { attachPrefetch(c, r.num, r.name); c.addEventListener('click', () => doLive(r.num, r.name)); }
-    });
-    document.querySelectorAll('[data-fav-i]').forEach(c => {
-      const f = favs[+c.dataset.favI];
-      if (f) { attachPrefetch(c, f.num, f.name); c.addEventListener('click', () => { doLive(f.num, f.name); saveRecent(f.num, f.name); }); }
-    });
 
-    // Move search wrap to hero section
-    const searchWrap = $('trainSearchWrap');
-    const heroInner = DOM.searchResults.querySelector('.welcome-hero');
-    if (searchWrap && heroInner) {
-      const sub = heroInner.querySelector('.welcome-sub');
-      if (sub) {
-        heroInner.insertBefore(searchWrap, sub);
-        searchWrap.classList.add('hero-mode');
-      }
+    // Bind event for the Train Status search within Welcome page
+    const wSearch = $('rrWelcomeTrainSearch');
+    const wBtn = $('rrWelcomeTrainBtn');
+    if(wSearch && wBtn) {
+      wSearch.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter' && wSearch.value.trim().length >= 2) {
+          DOM.searchInput.value = wSearch.value.trim();
+          doSearch(wSearch.value.trim());
+        }
+      });
+      wBtn.addEventListener('click', () => {
+        if(wSearch.value.trim().length >= 2) {
+          DOM.searchInput.value = wSearch.value.trim();
+          doSearch(wSearch.value.trim());
+        }
+      });
     }
+
+    // Hide global search wrap in header while on welcome, to match RailRadar minimalist look
+    const searchWrap = $('trainSearchWrap');
+    if (searchWrap) searchWrap.style.display = 'none';
   }
 
   function revealWelcomeAfterDelay() {
