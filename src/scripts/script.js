@@ -580,6 +580,31 @@
     }
   }
 
+  let allStationsLookup = null;
+  async function resolveStation(query) {
+    if (!query) return '';
+    if (!allStationsLookup) {
+      try {
+        const r = await fetch(BASE + '/lookup/stations');
+        const d = await r.json();
+        allStationsLookup = d.data || {};
+      } catch (e) {
+        return query.toUpperCase();
+      }
+    }
+    const q = query.trim().toUpperCase();
+    if (allStationsLookup[q]) return q;
+    
+    const lowerQ = query.trim().toLowerCase();
+    for (const [code, name] of Object.entries(allStationsLookup)) {
+      if (name.toLowerCase() === lowerQ) return code;
+    }
+    for (const [code, name] of Object.entries(allStationsLookup)) {
+      if (name.toLowerCase().includes(lowerQ)) return code;
+    }
+    return q;
+  }
+
   async function doFindTrains(from, to) {
     restoreSearchWrap();
     const sr = DOM.searchResults, lv = DOM.liveView;
@@ -589,9 +614,14 @@
     curNum = null; curName = null;
     DOM.refreshBtn.style.display = 'none';
     
-    sr.innerHTML = loader(`Finding trains from ${from} to ${to}...`);
+    sr.innerHTML = loader(`Finding stations...`);
     try {
-      const r = await fetch(BASE + `/api/v1/trains/between?from=${from}&to=${to}`);
+      const fromCode = await resolveStation(from);
+      const toCode = await resolveStation(to);
+      
+      sr.innerHTML = loader(`Finding trains from ${fromCode} to ${toCode}...`);
+      
+      const r = await fetch(BASE + `/api/v1/trains/between?from=${fromCode}&to=${toCode}`);
       if (!r.ok) throw new ApiError(`HTTP ${r.status}`, r.status);
       const res = await r.json();
       if (!res.success || !res.data) throw new ParseError('Invalid response');
@@ -604,7 +634,7 @@
       }));
       
       searchRes = mapped;
-      renderSearch(mapped, `${from} to ${to}`);
+      renderSearch(mapped, `${fromCode} to ${toCode}`);
     } catch (err) {
       const msg  = friendlyError(err);
       const hint = errorHint(err);
