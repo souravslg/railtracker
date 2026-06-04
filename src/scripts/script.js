@@ -87,8 +87,8 @@
   const trainNameCache = new Map();
   const searchCacheMemory = new Map();
 
-  // Use single canonical API endpoint (Sujith). Removed legacy Vercel endpoint.
-  const BASE = 'https://sujith.bhargavtodimela4.workers.dev';
+  // Use official RailRadar API directly
+  const BASE = 'https://api.railradar.in';
   const SEARCH_CACHE_KEY = 'tt-search-cache';
   const LIVE_CACHE_KEY   = 'tt-live-cache';
   const ROUTE_BASE_PATH  = (() => {
@@ -134,18 +134,104 @@
   /* ══════════════════════════════════════════════
      FETCH  (typed errors, structured retry)
   ══════════════════════════════════════════════ */
+  let allTrainsLookup = null;
+  async function searchTrainsLocally(q) {
+    if (!allTrainsLookup) {
+      try {
+        const r = await fetch(BASE + '/lookup/trains');
+        const d = await r.json();
+        allTrainsLookup = d.data || {};
+      } catch (e) {
+        throw new NetworkError('Failed to fetch train lookup data');
+      }
+    }
+    const results = [];
+    const lowerQ = q.toLowerCase();
+    for (const [num, name] of Object.entries(allTrainsLookup)) {
+      if (num.includes(lowerQ) || name.toLowerCase().includes(lowerQ)) {
+        let fromStn = 'Source', toStn = 'Dest';
+        if (name.includes(' - ')) {
+          const parts = name.split(' - ');
+          if (parts.length >= 2) {
+            fromStn = parts[0].split(' ').pop();
+            toStn = parts[1].split(' ')[0];
+          }
+        }
+        results.push({ number: num, name, fromStnCode: fromStn, toStnCode: toStn });
+        if (results.length >= 25) break;
+      }
+    }
+    return { success: true, data: results };
+  }
+
   async function fetchData(path) {
     const hasTimeout = typeof AbortSignal.timeout === 'function';
     const mkSig = () => hasTimeout ? AbortSignal.timeout(CFG.FETCH_TIMEOUT_MS) : undefined;
-    const base = BASE;
     try {
-      const r = await fetch(base + path, { signal: mkSig() });
-      if (!r.ok) throw new ApiError(`HTTP ${r.status}`, r.status);
-      return await parseResp(r);
+      if (path.startsWith('/search?q=')) {
+        const q = new URLSearchParams(path.split('?')[1]).get('q');
+        return await searchTrainsLocally(q);
+      }
+      
+      if (path.startsWith('/live-status?')) {
+        const params = new URLSearchParams(path.split('?')[1]);
+        const trainNo = params.get('trainNo');
+        
+        const r = await fetch(BASE + `/api/v1/trains/${trainNo}`, { signal: mkSig() });
+        if (!r.ok) throw new ApiError(`HTTP ${r.status}`, r.status);
+        const res = await parseResp(r);
+        
+        if (!res.success || !res.data) throw new ParseError('Invalid train data');
+        
+        const d = res.data;
+        const live = d.liveData || {};
+        const staticRoute = d.route || [];
+        
+        const stnMap = {};
+        staticRoute.forEach(s => stnMap[s.stationCode] = s.stationName);
+        
+        let delayInSecs = 0;
+        let curr = live.currentLocation || {};
+        
+        const mappedRoute = (live.route || []).map(r => {
+          const delayMins = Math.max(r.delayArrivalMinutes || 0, r.delayDepartureMinutes || 0);
+          return {
+            stationCode: r.stationCode,
+            station_name: stnMap[r.stationCode] || r.stationCode,
+            scheduledArrivalTime: r.scheduledArrival,
+            scheduledDepartureTime: r.scheduledDeparture,
+            actualArrivalTime: r.actualArrival,
+            actualDepartureTime: r.actualDeparture,
+            platformNumber: r.platform,
+            delayInMins: delayMins,
+            hasDeparted: !!r.actualDeparture,
+            hasArrived: !!r.actualArrival
+          };
+        });
+        
+        if (mappedRoute.length > 0) {
+          const lastArrived = [...mappedRoute].reverse().find(r => r.actualArrivalTime);
+          if (lastArrived) delayInSecs = (lastArrived.delayInMins || 0) * 60;
+        }
+
+        return {
+          success: true,
+          data: {
+            currentPosition: {
+              latLng: { latitude: curr.latitude, longitude: curr.longitude },
+              stationCode: curr.stationCode,
+              distanceFromOriginKm: curr.distanceFromOriginKm,
+              speedKmph: curr.speedKmph || 0
+            },
+            delayInSecs: delayInSecs,
+            route: mappedRoute
+          }
+        };
+      }
     } catch (e) {
       if (e instanceof ParseError) throw e;
       if (e instanceof ApiError && e.status < 500) throw e;
-      if (e.name === 'TimeoutError' || e.name === 'AbortError') throw new TimeoutError(`Endpoint ${base} timed out`);
+      if (e.name === 'TimeoutError' || e.name === 'AbortError') throw new TimeoutError(`Request timed out`);
       if (e instanceof ApiError) throw e;
       throw new NetworkError(e.message);
     }
