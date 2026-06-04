@@ -580,6 +580,38 @@
     }
   }
 
+  async function doFindTrains(from, to) {
+    restoreSearchWrap();
+    const sr = DOM.searchResults, lv = DOM.liveView;
+    lv.innerHTML = '';
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+    stopAR();
+    curNum = null; curName = null;
+    DOM.refreshBtn.style.display = 'none';
+    
+    sr.innerHTML = loader(`Finding trains from ${from} to ${to}...`);
+    try {
+      const r = await fetch(BASE + `/api/v1/trains/between?from=${from}&to=${to}`);
+      if (!r.ok) throw new ApiError(`HTTP ${r.status}`, r.status);
+      const res = await r.json();
+      if (!res.success || !res.data) throw new ParseError('Invalid response');
+      
+      const mapped = (res.data.trains || []).map(t => ({
+        number: t.trainNumber,
+        name: t.trainName,
+        fromStnCode: t.sourceStationCode,
+        toStnCode: t.destinationStationCode
+      }));
+      
+      searchRes = mapped;
+      renderSearch(mapped, `${from} to ${to}`);
+    } catch (err) {
+      const msg  = friendlyError(err);
+      const hint = errorHint(err);
+      sr.innerHTML = renderError(`Failed: ${msg}`, hint);
+    }
+  }
+
   function renderSkeleton(n) {
     let h = '';
     for (let i = 0; i < n; i++) {
@@ -1506,14 +1538,14 @@
           <div class="rr-card-body">
             <div class="rr-input-row">
               <span class="material-symbols-rounded text-success">location_on</span>
-              <input type="text" placeholder="From Station" disabled>
+              <input type="text" id="rrFromStn" placeholder="From Station Code (e.g. NDLS)" class="rr-input-clear" style="text-transform: uppercase;">
             </div>
             <div class="rr-input-row border-top">
               <span class="material-symbols-rounded text-primary">train</span>
-              <input type="text" placeholder="To Station" disabled>
+              <input type="text" id="rrToStn" placeholder="To Station Code (e.g. BPL)" class="rr-input-clear" style="text-transform: uppercase;">
             </div>
             <div class="rr-card-action">
-              <button class="rr-btn rr-btn-primary" disabled>View Trains <span class="material-symbols-rounded" style="font-size:16px;margin-left:4px">arrow_forward</span></button>
+              <button id="rrFindBtn" class="rr-btn rr-btn-primary">View Trains <span class="material-symbols-rounded" style="font-size:16px;margin-left:4px">arrow_forward</span></button>
             </div>
           </div>
         </div>
@@ -1638,6 +1670,28 @@
           doSearch(wSearch.value.trim());
         }
       });
+    }
+
+    // Bind event for Find Trains (Between Stations)
+    const rrFrom = $('rrFromStn');
+    const rrTo = $('rrToStn');
+    const rrFindBtn = $('rrFindBtn');
+    if (rrFrom && rrTo && rrFindBtn) {
+      rrFindBtn.addEventListener('click', () => {
+        const fromCode = rrFrom.value.trim().toUpperCase();
+        const toCode = rrTo.value.trim().toUpperCase();
+        if (fromCode.length >= 2 && toCode.length >= 2) {
+          doFindTrains(fromCode, toCode);
+        } else {
+          toast('Enter valid station codes', 'error');
+        }
+      });
+      
+      const onEnter = (e) => {
+        if (e.key === 'Enter') rrFindBtn.click();
+      };
+      rrFrom.addEventListener('keypress', onEnter);
+      rrTo.addEventListener('keypress', onEnter);
     }
 
     // Hide global search wrap in header while on welcome, to match RailRadar minimalist look
