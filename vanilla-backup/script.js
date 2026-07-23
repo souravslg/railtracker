@@ -201,12 +201,18 @@
      UTILS
   ══════════════════════════════════════════════ */
   const pad    = n  => String(n).padStart(2, '0');
-  const fmt    = ts => ts
-    ? new Date(ts * 1000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
-    : '—';
+  const fmt = ts => {
+    if (!ts) return '—';
+    const num = Number(ts);
+    const date = (!isNaN(num) && isFinite(num)) ? new Date(num * 1000) : new Date(ts);
+    if (isNaN(date.getTime())) return '—';
+    return date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  };
   const fmtDateTime = ts => {
     if (!ts) return '—';
-    const d = new Date(ts * 1000);
+    const num = Number(ts);
+    const d = (!isNaN(num) && isFinite(num)) ? new Date(num * 1000) : new Date(ts);
+    if (isNaN(d.getTime())) return '—';
     const day = String(d.getDate()).padStart(2, '0');
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const month = months[d.getMonth()];
@@ -215,7 +221,13 @@
   };
   const delaySecs = (actualTs, scheduledTs) => {
     if (actualTs == null || scheduledTs == null) return 0;
-    return Math.max(0, actualTs - scheduledTs);
+    const parse = val => {
+      const num = Number(val);
+      if (!isNaN(num) && isFinite(num)) return num;
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? 0 : Math.floor(d.getTime() / 1000);
+    };
+    return Math.max(0, parse(actualTs) - parse(scheduledTs));
   };
   const he     = s  => String(s == null ? '' : s)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -662,12 +674,16 @@
     let notStartedYet = false;
     let todayStartTs = 0;
     if (originStn && originStn.scheduledDepartureTime) {
-      const d = new Date(originStn.scheduledDepartureTime * 1000);
-      const today = new Date();
-      today.setHours(d.getHours(), d.getMinutes(), d.getSeconds(), 0);
-      todayStartTs = Math.floor(today.getTime() / 1000);
-      if (Date.now() / 1000 < todayStartTs) {
-        notStartedYet = true;
+      const depTimeVal = originStn.scheduledDepartureTime;
+      const num = Number(depTimeVal);
+      const d = (!isNaN(num) && isFinite(num)) ? new Date(num * 1000) : new Date(depTimeVal);
+      if (!isNaN(d.getTime())) {
+        const today = new Date();
+        today.setHours(d.getHours(), d.getMinutes(), d.getSeconds(), 0);
+        todayStartTs = Math.floor(today.getTime() / 1000);
+        if (Date.now() / 1000 < todayStartTs) {
+          notStartedYet = true;
+        }
       }
     }
 
@@ -675,8 +691,17 @@
     if (nextStop) {
       const liveArrivalSecs = nextStop.actualArrivalTime || (nextStop.scheduledArrivalTime ? nextStop.scheduledArrivalTime + (data.delayInSecs || 0) : null);
       if (liveArrivalSecs) {
-        etaTs  = liveArrivalSecs * 1000;
-        etaStr = new Date(etaTs).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+        const num = Number(liveArrivalSecs);
+        if (!isNaN(num) && isFinite(num)) {
+          etaTs  = num * 1000;
+          etaStr = new Date(etaTs).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+        } else {
+          const d = new Date(liveArrivalSecs);
+          if (!isNaN(d.getTime())) {
+            etaTs  = d.getTime();
+            etaStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+          }
+        }
       }
     }
     const speedKmh = data.currentPosition?.speedKmph != null ? Math.round(data.currentPosition.speedKmph) : null;
